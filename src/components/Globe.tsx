@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import type { City } from '../types';
-import { CITIES } from '../data/cities';
+import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
+import type { City } from "../types";
+import { CITIES } from "../data/cities";
 import {
   createOceanTexture,
   latLngToVec3,
   upgradeWithTopoJSON,
-} from '../lib/three-globe';
+} from "../lib/three-globe";
 
 export interface GlobeHoverState {
   city: City | null;
@@ -18,6 +18,10 @@ interface GlobeProps {
   onCitySelect: (city: City) => void;
   onHoverChange?: (state: GlobeHoverState) => void;
   onZoomingChange?: (zooming: boolean) => void;
+  /** Camera Z distance to start at on mount. If less than the rest position
+   *  (8), the camera animates outward over 600ms — used for a "zoom out"
+   *  transition when arriving back from a city dashboard. */
+  initialCameraZ?: number;
 }
 
 /**
@@ -28,6 +32,7 @@ export default function Globe({
   onCitySelect,
   onHoverChange,
   onZoomingChange,
+  initialCameraZ,
 }: GlobeProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [zoomingIn, setZoomingIn] = useState(false);
@@ -41,7 +46,8 @@ export default function Globe({
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 8;
+    const REST_CAMERA_Z = 7;
+    camera.position.z = initialCameraZ ?? REST_CAMERA_Z;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -160,7 +166,11 @@ export default function Globe({
       const ring = new THREE.Mesh(ringGeo, ringMat);
       ring.position.copy(pos);
       ring.lookAt(0, 0, 0);
-      ring.userData = { city, isPulse: true, phase: Math.random() * Math.PI * 2 };
+      ring.userData = {
+        city,
+        isPulse: true,
+        phase: Math.random() * Math.PI * 2,
+      };
 
       cityGroup.add(dot);
       cityGroup.add(ring);
@@ -177,6 +187,25 @@ export default function Globe({
     const targetRotation = { x: 0, y: 0 };
     let currentHoveredCity: City | null = null;
     let zoomAnimating = false;
+
+    // Zoom-out on mount when returning from a city dashboard
+    if (initialCameraZ !== undefined && initialCameraZ < REST_CAMERA_Z) {
+      zoomAnimating = true;
+      const startZ = initialCameraZ;
+      const startTime = performance.now();
+      const animateZoomOut = () => {
+        const elapsed = performance.now() - startTime;
+        const t = Math.min(1, elapsed / 600);
+        const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        camera.position.z = startZ + (REST_CAMERA_Z - startZ) * ease;
+        if (t < 1) {
+          requestAnimationFrame(animateZoomOut);
+        } else {
+          zoomAnimating = false;
+        }
+      };
+      animateZoomOut();
+    }
 
     const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
@@ -196,14 +225,17 @@ export default function Globe({
         rotVelX = dy * 0.005;
         targetRotation.y += rotVelY;
         targetRotation.x += rotVelX;
-        targetRotation.x = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, targetRotation.x));
+        targetRotation.x = Math.max(
+          -Math.PI / 2.2,
+          Math.min(Math.PI / 2.2, targetRotation.x),
+        );
         prevX = e.clientX;
         prevY = e.clientY;
       }
 
       const mouseNDC = new THREE.Vector2(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
-        -((e.clientY - rect.top) / rect.height) * 2 + 1
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
       );
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(mouseNDC, camera);
@@ -217,14 +249,18 @@ export default function Globe({
         const cityDir = cityPos.clone().normalize();
         if (cityDir.dot(camDir) > 0) {
           currentHoveredCity = target.userData.city as City;
-          onHoverChange?.({ city: currentHoveredCity, x: e.clientX, y: e.clientY });
-          renderer.domElement.style.cursor = 'pointer';
+          onHoverChange?.({
+            city: currentHoveredCity,
+            x: e.clientX,
+            y: e.clientY,
+          });
+          renderer.domElement.style.cursor = "pointer";
           return;
         }
       }
       currentHoveredCity = null;
       onHoverChange?.({ city: null, x: e.clientX, y: e.clientY });
-      renderer.domElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+      renderer.domElement.style.cursor = isDragging ? "grabbing" : "grab";
     };
 
     const onClick = (e: MouseEvent) => {
@@ -232,7 +268,7 @@ export default function Globe({
       const rect = renderer.domElement.getBoundingClientRect();
       const mouseNDC = new THREE.Vector2(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
-        -((e.clientY - rect.top) / rect.height) * 2 + 1
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
       );
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(mouseNDC, camera);
@@ -272,14 +308,17 @@ export default function Globe({
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       camera.position.z += e.deltaY * 0.005;
-      camera.position.z = Math.max(5, Math.min(15, camera.position.z));
+      // Lower bound is a tiny positive number — just enough to keep the
+      // camera from crossing the origin (which would flip the view); the
+      // user can otherwise zoom in past the globe surface freely.
+      camera.position.z = Math.max(4, Math.min(15, camera.position.z));
     };
 
-    renderer.domElement.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mousemove', onMouseMove);
-    renderer.domElement.addEventListener('click', onClick);
-    renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
+    renderer.domElement.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("mousemove", onMouseMove);
+    renderer.domElement.addEventListener("click", onClick);
+    renderer.domElement.addEventListener("wheel", onWheel, { passive: false });
 
     // Animation loop
     let frameId = 0;
@@ -311,13 +350,14 @@ export default function Globe({
       });
 
       cityMeshes.forEach((dot) => {
-        const isHov = currentHoveredCity && dot.userData.city.id === currentHoveredCity.id;
+        const isHov =
+          currentHoveredCity && dot.userData.city.id === currentHoveredCity.id;
         const targetScale = isHov ? 1.6 : 1;
         dot.scale.x += (targetScale - dot.scale.x) * 0.2;
         dot.scale.y = dot.scale.x;
         dot.scale.z = dot.scale.x;
         (dot.material as THREE.MeshBasicMaterial).color.setHex(
-          isHov ? 0xffffff : 0xfbbf24
+          isHov ? 0xffffff : 0xfbbf24,
         );
       });
 
@@ -333,16 +373,16 @@ export default function Globe({
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
-    window.addEventListener('resize', onResize);
+    window.addEventListener("resize", onResize);
 
     return () => {
       cancelAnimationFrame(frameId);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('mouseup', onMouseUp);
-      window.removeEventListener('mousemove', onMouseMove);
-      renderer.domElement.removeEventListener('mousedown', onMouseDown);
-      renderer.domElement.removeEventListener('click', onClick);
-      renderer.domElement.removeEventListener('wheel', onWheel);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("mousemove", onMouseMove);
+      renderer.domElement.removeEventListener("mousedown", onMouseDown);
+      renderer.domElement.removeEventListener("click", onClick);
+      renderer.domElement.removeEventListener("wheel", onWheel);
       mount.removeChild(renderer.domElement);
       renderer.dispose();
       globeGeometry.dispose();
@@ -351,8 +391,13 @@ export default function Globe({
       glowMaterial.dispose();
       gridMat.dispose();
       equatorMat.dispose();
-      gridGroup.children.forEach((line) => (line as THREE.Line).geometry.dispose());
+      gridGroup.children.forEach((line) =>
+        (line as THREE.Line).geometry.dispose(),
+      );
     };
+    // initialCameraZ is intentionally excluded — we capture it once on mount
+    // so route state changes don't re-run the whole Three.js setup.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onCitySelect, onHoverChange, onZoomingChange]);
 
   return (
@@ -360,8 +405,8 @@ export default function Globe({
       ref={mountRef}
       className="w-full h-full transition-all duration-700 ease-out"
       style={{
-        cursor: 'grab',
-        filter: zoomingIn ? 'blur(20px) brightness(0.4)' : 'none',
+        cursor: "grab",
+        filter: zoomingIn ? "blur(20px) brightness(0.4)" : "none",
       }}
     />
   );

@@ -1,9 +1,14 @@
-import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Globe2 } from 'lucide-react';
 import Globe, { type GlobeHoverState } from '../components/Globe';
+import { CITIES } from '../data/cities';
 import { getFlagUrl } from '../lib/country-flags';
+import { preloadImages } from '../lib/preload';
 import type { City } from '../types';
+
+const ZOOM_OUT_DURATION_MS = 600;
+const ZOOM_OUT_START_Z = 3.5;
 
 function formatCoord(lat: number, lng: number) {
   const latStr = `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'}`;
@@ -13,11 +18,60 @@ function formatCoord(lat: number, lng: number) {
 
 export default function GlobePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [hover, setHover] = useState<GlobeHoverState>({ city: null, x: 0, y: 0 });
   const [zoomingIn, setZoomingIn] = useState(false);
 
+  // Captured once at mount: did we arrive here via the dashboard's Back button?
+  const [initialCameraZ] = useState<number | undefined>(() =>
+    (location.state as { fromCity?: boolean } | null)?.fromCity
+      ? ZOOM_OUT_START_Z
+      : undefined
+  );
+  const [zoomingOut, setZoomingOut] = useState(initialCameraZ !== undefined);
+
+  // Trigger the overlay's opacity transition on the next frame so the
+  // initial paint at opacity-100 is preserved before fading to 0.
+  useEffect(() => {
+    if (!zoomingOut) return;
+    const t = window.setTimeout(() => setZoomingOut(false), 16);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Idle prefetch: as soon as the globe is interactive, quietly load the
+  // first background image of every city so a click without hover still
+  // paints fast. Subsequent images per city are pulled in on hover.
+  useEffect(() => {
+    const firstImages = CITIES.map((c) => c.bg[0]).filter(Boolean);
+    // requestIdleCallback isn't available in Safari; cast through `unknown`
+    // so we can feature-detect rather than rely on the lib.dom typing.
+    const w = window as unknown as {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    if (w.requestIdleCallback) {
+      const handle = w.requestIdleCallback(
+        () => preloadImages(firstImages),
+        { timeout: 2500 }
+      );
+      return () => w.cancelIdleCallback?.(handle);
+    }
+    const handle = window.setTimeout(() => preloadImages(firstImages), 1500);
+    return () => window.clearTimeout(handle);
+  }, []);
+
+  // Preload the dashboard backgrounds on hover so the carousel paints
+  // instantly when the user clicks through. Belt-and-suspenders preload also
+  // fires at click time in case they click without hovering first.
+  const handleHoverChange = useCallback((state: GlobeHoverState) => {
+    setHover(state);
+    if (state.city) preloadImages(state.city.bg);
+  }, []);
+
   const handleCitySelect = useCallback(
     (city: City) => {
+      preloadImages(city.bg);
       navigate(`/city/${city.id}`);
     },
     [navigate]
@@ -29,8 +83,9 @@ export default function GlobePage() {
     <div className="relative w-full h-full bg-white overflow-hidden">
       <Globe
         onCitySelect={handleCitySelect}
-        onHoverChange={setHover}
+        onHoverChange={handleHoverChange}
         onZoomingChange={setZoomingIn}
+        initialCameraZ={initialCameraZ}
       />
 
       {/* Header */}
@@ -163,12 +218,23 @@ export default function GlobePage() {
         </div>
       )}
 
-      {/* Black overlay during zoom-in transition */}
+      {/* Black overlay during zoom-in transition (clicking a city) */}
       <div
         className={`absolute inset-0 bg-black pointer-events-none transition-opacity duration-700 ease-out ${
           zoomingIn ? 'opacity-100' : 'opacity-0'
         }`}
       />
+
+      {/* Black overlay during zoom-out transition (returning from a city).
+          Initially opaque on first paint, then fades as the camera pulls back. */}
+      {initialCameraZ !== undefined && (
+        <div
+          className={`absolute inset-0 bg-black pointer-events-none ease-out ${
+            zoomingOut ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ transition: `opacity ${ZOOM_OUT_DURATION_MS}ms ease-out` }}
+        />
+      )}
     </div>
   );
 }

@@ -17,13 +17,15 @@ export default function CityDashboardPage() {
   if (!city) return <Navigate to="/" replace />;
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    // bg-slate-900 is a fallback shown until the carousel's images finish
+    // loading, so we never flash a blank white screen during navigation.
+    <div className="relative w-full h-full overflow-hidden bg-slate-900">
       <BackgroundCarousel resetKey={city.id} images={city.bg} />
 
       {/* Top bar */}
       <div className="relative z-10 flex items-center justify-between px-6 py-4">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/', { state: { fromCity: true } })}
           className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
         >
           <ArrowLeft className="w-4 h-4" />
