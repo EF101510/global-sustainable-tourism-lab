@@ -12,7 +12,6 @@ export interface CityIssue {
 export interface City {
   id: string;
   name: string;
-  nameZh: string;
   country: string;
   lat: number;
   lng: number;
@@ -36,259 +35,412 @@ interface BoardPost {
 
 // ============ City Data ============
 const CITIES: City[] = [
-  // Europe
-  { id: 'venice', name: 'Venice', nameZh: '威尼斯', country: 'Italy', lat: 45.4408, lng: 12.3155, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=1600',
-    intro: '舉世聞名的水上之都，每年接待約 3000 萬遊客，但僅有 5 萬常住居民。',
+  // ============ Europe ============
+  {
+    id: 'venice',
+    name: 'Venice',
+    country: 'Italy',
+    lat: 45.4408,
+    lng: 12.3155,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=1600&q=80&auto=format&fit=crop',
+    intro: 'The fabled lagoon city hosts ~30 million visitors a year against a resident population that has fallen below 50,000.',
     issues: [
-      { tag: '居民流失', icon: '🏚️', detail: '過去 50 年常住人口從 17.5 萬下降至約 5 萬，房價飆漲使年輕人被迫搬離。' },
-      { tag: '環境破壞', icon: '🌊', detail: '大型郵輪造成潟湖侵蝕，威尼斯每年下沉約 2 公釐。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '傳統手工玻璃工藝後繼無人，多數紀念品為廉價進口品。' },
-      { tag: '交通崩潰', icon: '🚤', detail: '旺季每日遊客超過 11 萬人，主要橋樑與廣場壅塞嚴重。' },
-    ]
+      { tag: 'Cruise Ship Erosion', icon: '🚢', detail: 'Wakes from large cruise ships erode the lagoon; the city is sinking ~2 mm per year. Ships over 25,000 tons were banned from St. Mark\'s Basin in 2021.' },
+      { tag: 'Day-Tripper Tax', icon: '💶', detail: 'In 2024 Venice became the first city in the world to charge a €5 day-trip access fee on peak days, hoping to redistribute crowds.' },
+      { tag: 'Resident Exodus', icon: '🏚️', detail: 'Population dropped from 175,000 in the 1950s to under 50,000. One in four buildings is now vacant or used as short-term rental.' },
+      { tag: 'Vanishing Crafts', icon: '🎭', detail: 'Murano glass apprenticeships have fallen ~70%; most "souvenirs" sold in the city are imported mass-market goods.' },
+    ],
   },
-  { id: 'barcelona', name: 'Barcelona', nameZh: '巴塞隆納', country: 'Spain', lat: 41.3851, lng: 2.1734, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1600',
-    intro: '高第建築之城，年遊客量超過城市人口 20 倍以上，2024 年市府宣布 2028 年禁止短租。',
+  {
+    id: 'barcelona',
+    name: 'Barcelona',
+    country: 'Spain',
+    lat: 41.3851,
+    lng: 2.1734,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Annual visitors exceed the city population more than 20-fold. In 2024 the mayor announced a complete short-term-rental ban by 2028.',
     issues: [
-      { tag: '居民流失', icon: '🏚️', detail: '熱門區域房租 10 年內上漲 68%，當地居民被迫遷出市中心。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '蘭布拉大道傳統商店被連鎖紀念品店取代。' },
-      { tag: '環境破壞', icon: '🌊', detail: '海灘水質因遊輪污染惡化，部分海域禁止游泳。' },
-      { tag: '交通崩潰', icon: '🚌', detail: '聖家堂周邊巴士線曾因遊客過多被從 Google Maps 移除。' },
-    ]
+      { tag: '2028 Airbnb Ban', icon: '🚫', detail: 'Mayor Jaume Collboni announced in mid-2024 that all 10,000+ short-term tourist licences will be phased out by November 2028.' },
+      { tag: 'Water-Pistol Protests', icon: '💦', detail: 'In July 2024, residents marched along La Rambla spraying tourists with water pistols and chanting "Tourists go home."' },
+      { tag: 'Bus #116 Removed', icon: '🚌', detail: 'A neighbourhood bus near Park Güell was hidden from Google Maps after locals could no longer board it during peak season.' },
+      { tag: '68% Rent Hike', icon: '🏚️', detail: 'Rents in El Born and Gràcia rose 68% in 10 years, pushing long-time residents to the suburbs.' },
+    ],
   },
-  { id: 'amsterdam', name: 'Amsterdam', nameZh: '阿姆斯特丹', country: 'Netherlands', lat: 52.3676, lng: 4.9041, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1534351590666-13e3e96c5017?w=1600',
-    intro: '運河之城，市府推行「Stay Away」運動，主動勸退派對型遊客。',
+  {
+    id: 'amsterdam',
+    name: 'Amsterdam',
+    country: 'Netherlands',
+    lat: 52.3676,
+    lng: 4.9041,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=1600&q=80&auto=format&fit=crop',
+    intro: 'The canal city is actively turning visitors away — its "Stay Away" campaign targets specific tourist demographics, a global first.',
     issues: [
-      { tag: '文化稀釋', icon: '🎭', detail: '紅燈區與咖啡店成為國際派對景點，原社區生活被破壞。' },
-      { tag: '居民流失', icon: '🏚️', detail: '市中心住宅 30% 為短租用途，本地家庭難以租屋。' },
-      { tag: '交通崩潰', icon: '🚲', detail: '單車道擠滿觀光客，事故率上升 40%。' },
-      { tag: '環境破壞', icon: '🌊', detail: '運河水質因遊船廢氣與垃圾受污染。' },
-    ]
+      { tag: '"Stay Away" Campaign', icon: '🛑', detail: 'A 2023 ad campaign explicitly targeted British men aged 18-35 searching for "stag party Amsterdam," warning of fines and arrests.' },
+      { tag: 'Cruise Terminal Closure', icon: '🚢', detail: 'The city council voted in 2023 to close the central cruise terminal by 2026 to push large ships out of the city core.' },
+      { tag: 'Red Light Relocation', icon: '🌹', detail: 'Plans to move the De Wallen sex-work district to a purpose-built "erotic centre" outside the centre, easing tourist pressure on residents.' },
+      { tag: 'Cycling Accidents +40%', icon: '🚲', detail: 'Tourists unfamiliar with bike etiquette drove cycling-related incidents up 40%, prompting separate tourist walking lanes.' },
+    ],
   },
-  { id: 'santorini', name: 'Santorini', nameZh: '聖托里尼', country: 'Greece', lat: 36.3932, lng: 25.4615, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600',
-    intro: '愛琴海明珠，常住人口僅 1.5 萬但年遊客達 340 萬，水資源嚴重短缺。',
+  {
+    id: 'santorini',
+    name: 'Santorini',
+    country: 'Greece',
+    lat: 36.3932,
+    lng: 25.4615,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&q=80&auto=format&fit=crop',
+    intro: 'A volcanic island with 15,000 residents and 3.4 million annual visitors. Every drop of fresh water comes from desalination.',
     issues: [
-      { tag: '環境破壞', icon: '💧', detail: '島上無天然水源，全靠海水淡化，旺季用水量超載。' },
-      { tag: '交通崩潰', icon: '🚢', detail: '單日最多 5 艘郵輪同時靠岸，伊亞鎮人滿為患。' },
-      { tag: '居民流失', icon: '🏚️', detail: '居民被高房價擠出，多數搬至雅典或克里特島。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '傳統釀酒業被觀光餐廳取代，葡萄園面積減半。' },
-    ]
+      { tag: 'Zero Natural Water', icon: '💧', detail: 'Santorini has no freshwater springs; all drinking water is desalinated. Peak-season demand routinely exceeds plant capacity.' },
+      { tag: 'Cruise Cap', icon: '🚢', detail: 'After single-day arrivals hit 17,000 in 2023, the government capped cruise passengers at 8,000 per day starting in 2025.' },
+      { tag: 'Donkey Welfare Crisis', icon: '🐴', detail: 'Heavier tourists were banned from donkey rides up Fira\'s 588 steps after a wave of spinal injuries among the animals.' },
+      { tag: 'Caldera Cliff Erosion', icon: '🌋', detail: 'Volcanic-rock cliff edges in Oia are crumbling under the weight of selfie-seeking crowds; barriers have been added at viewpoints.' },
+    ],
   },
-  { id: 'dubrovnik', name: 'Dubrovnik', nameZh: '杜布羅夫尼克', country: 'Croatia', lat: 42.6507, lng: 18.0944, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1555990538-32117dc6e23a?w=1600',
-    intro: '《權力遊戲》取景地，舊城區每日限流 4000 人，UNESCO 警告除名風險。',
+  {
+    id: 'dubrovnik',
+    name: 'Dubrovnik',
+    country: 'Croatia',
+    lat: 42.6507,
+    lng: 18.0944,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1586500036706-41963de24d8b?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Game-of-Thrones tourism nearly cost the Old Town its UNESCO status; daily entry is now capped at 4,000 visitors.',
     issues: [
-      { tag: '交通崩潰', icon: '🚢', detail: '單日曾湧入 1 萬名郵輪遊客，舊城區水洩不通。' },
-      { tag: '環境破壞', icon: '🏛️', detail: '中世紀城牆因過度踩踏出現磨損。' },
-      { tag: '居民流失', icon: '🏚️', detail: '舊城區居民從 5000 人降至不到 1500 人。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '本地小店全數轉為紀念品店與餐廳。' },
-    ]
+      { tag: 'Game of Thrones Effect', icon: '🎬', detail: 'Cruise arrivals hit 10,000 per day at the peak of HBO\'s show; UNESCO formally warned the city it could be delisted.' },
+      { tag: '4,000-Person Cap', icon: '🚪', detail: 'The Old Town now uses sensors at the city gates to enforce a simultaneous-entry cap of 4,000 visitors.' },
+      { tag: 'Stradun Stone Wear', icon: '🏛️', detail: 'The 700-year-old polished marble of the Stradun is showing visible grooves from millions of footfalls per year.' },
+      { tag: 'Old-Town Hollowing', icon: '🏚️', detail: 'Resident population inside the walls fell from 5,000 to under 1,500; nearly every ground-floor unit is now a souvenir shop.' },
+    ],
   },
-  { id: 'reykjavik', name: 'Reykjavík', nameZh: '雷克雅維克', country: 'Iceland', lat: 64.1466, lng: -21.9426, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1504284402330-1d0fe06ed02b?w=1600',
-    intro: '北極光之都，10 年內遊客量增加 400%，自然景觀面臨踩踏壓力。',
+  {
+    id: 'reykjavik',
+    name: 'Reykjavík',
+    country: 'Iceland',
+    lat: 64.1466,
+    lng: -21.9426,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1531168556467-80aace0d0144?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Visitor numbers grew 400% in a decade after the 2008 financial crash, putting fragile sub-arctic ecosystems under pressure.',
     issues: [
-      { tag: '環境破壞', icon: '🌋', detail: '苔原生態系脆弱，遊客脫離步道造成數十年無法恢復的傷害。' },
-      { tag: '交通崩潰', icon: '🚐', detail: '金圈景區停車場常年爆滿，緊急車輛難以通行。' },
-      { tag: '居民流失', icon: '🏚️', detail: 'Airbnb 占住宅市場 8%，本地租屋價格翻倍。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '主街商店超過 60% 為觀光導向。' },
-    ]
+      { tag: 'Moss Footprint Damage', icon: '🌋', detail: 'A single off-trail footprint on Icelandic moss can take decades to recover. Geyser and lava fields now have boardwalk-only access.' },
+      { tag: 'Golden Circle Gridlock', icon: '🚐', detail: 'Þingvellir car parks are full year-round; emergency vehicles struggle to reach trailheads during whiteout conditions.' },
+      { tag: 'Airbnb Saturation', icon: '🏠', detail: '8% of all housing in greater Reykjavík is short-term rental; nurses and teachers commute from satellite towns 40 km away.' },
+      { tag: 'Whale-Watch Stress', icon: '🐋', detail: 'Boat traffic in Faxaflói Bay is suspected of altering minke and humpback feeding routes; biologists are pushing for a vessel cap.' },
+    ],
   },
-  { id: 'paris', name: 'Paris', nameZh: '巴黎', country: 'France', lat: 48.8566, lng: 2.3522, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600',
-    intro: '光之城，年遊客約 4400 萬，2024 奧運後過度旅遊問題加劇。',
+  {
+    id: 'paris',
+    name: 'Paris',
+    country: 'France',
+    lat: 48.8566,
+    lng: 2.3522,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&q=80&auto=format&fit=crop',
+    intro: '~44 million annual visitors. Post-2024 Olympics, the city is reckoning with a tourism load it now struggles to absorb.',
     issues: [
-      { tag: '交通崩潰', icon: '🗼', detail: '艾菲爾鐵塔週邊步行區擁擠程度達歷史新高。' },
-      { tag: '居民流失', icon: '🏚️', detail: '瑪黑區與蒙馬特原住戶 20 年內減少 30%。' },
-      { tag: '環境破壞', icon: '🌫️', detail: '塞納河水質長期超標，奧運游泳項目曾受影響。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '小型書店、麵包店被連鎖品牌取代。' },
-    ]
+      { tag: 'Olympics Hangover', icon: '🏟️', detail: 'Post-2024 Games footfall remained 20% above pre-pandemic norms; locals report hostility toward influencer flash-mobs in Montmartre.' },
+      { tag: 'Seine Cleanup', icon: '🌊', detail: 'A €1.4 billion project barely brought the Seine to swimmable E. coli levels in time for the 2024 Olympic triathlon.' },
+      { tag: 'Bakery Replacement', icon: '🥖', detail: 'About 30% of independent boulangeries in the Marais have been replaced by chain stores or souvenir outlets in 20 years.' },
+      { tag: 'Eiffel Tower Bottleneck', icon: '🗼', detail: 'Pedestrian crowding around the Champ de Mars triggers periodic emergency closures of access roads.' },
+    ],
   },
-  { id: 'florence', name: 'Florence', nameZh: '佛羅倫斯', country: 'Italy', lat: 43.7696, lng: 11.2558, region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1543429776-2782fc8e1acd?w=1600',
-    intro: '文藝復興發源地，歷史中心每平方公里遊客密度居歐洲之冠。',
+  {
+    id: 'florence',
+    name: 'Florence',
+    country: 'Italy',
+    lat: 43.7696,
+    lng: 11.2558,
+    region: 'Europe',
+    bg: 'https://images.unsplash.com/photo-1543429776-2782fc8e1acd?w=1600&q=80&auto=format&fit=crop',
+    intro: 'The cradle of the Renaissance has Europe\'s densest tourist footprint per square kilometre of historic centre.',
     issues: [
-      { tag: '交通崩潰', icon: '🏛️', detail: '烏菲茲美術館排隊常達 4 小時。' },
-      { tag: '居民流失', icon: '🏚️', detail: '歷史中心住戶 50 年內減少超過一半。' },
-      { tag: '環境破壞', icon: '🌫️', detail: '空氣污染與震動加速古蹟風化。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '傳統皮革工坊與金匠店被觀光商店取代。' },
-    ]
+      { tag: '4-Hour Uffizi Queue', icon: '⏰', detail: 'Average queue time at the Uffizi exceeds four hours in peak season — longer than most tour groups\' attention spans.' },
+      { tag: 'Centre Depopulation', icon: '🏚️', detail: 'The historic core\'s residential population has more than halved since 1970; nearly all upper floors are now Airbnb.' },
+      { tag: 'Vibration Damage', icon: '🏛️', detail: 'Tour bus vibration and concentrated footfall accelerate facade weathering on Renaissance palazzi along the Arno.' },
+      { tag: 'No-Eating Steps', icon: '🍦', detail: 'A 2023 ordinance bans eating on the steps of the Duomo and Santa Croce — a response to gelato stains on 600-year-old stone.' },
+    ],
   },
-  // Asia
-  { id: 'kyoto', name: 'Kyoto', nameZh: '京都', country: 'Japan', lat: 35.0116, lng: 135.7681, region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600',
-    intro: '千年古都，2024 年因遊客騷擾藝妓問題，祇園部分小巷禁止觀光客進入。',
+
+  // ============ Asia ============
+  {
+    id: 'kyoto',
+    name: 'Kyoto',
+    country: 'Japan',
+    lat: 35.0116,
+    lng: 135.7681,
+    region: 'Asia',
+    bg: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=80&auto=format&fit=crop',
+    intro: 'In 2024 parts of the Gion geisha district were closed to tourists after repeated harassment of maiko apprentices.',
     issues: [
-      { tag: '文化稀釋', icon: '🎎', detail: '藝妓被觀光客追拍騷擾，傳統茶屋文化受威脅。' },
-      { tag: '交通崩潰', icon: '🚌', detail: '市區公車旺季嚴重塞車，居民通勤時間倍增。' },
-      { tag: '環境破壞', icon: '🌸', detail: '清水寺周邊櫻花樹因遊客踩踏受損。' },
-      { tag: '居民流失', icon: '🏚️', detail: '町家被改建為民宿，傳統社區瓦解。' },
-    ]
+      { tag: 'Geisha Harassment Ban', icon: '📸', detail: 'In April 2024 Gion\'s private alleys were closed to tourists; visitors had been chasing, grabbing and even tearing the kimonos of maiko.' },
+      { tag: 'City Bus Crisis', icon: '🚌', detail: 'Locals were routinely unable to board public buses behind tourist suitcases; 2024 launched separate tourist-only express buses.' },
+      { tag: 'Bamboo Carving', icon: '🎋', detail: 'The Arashiyama bamboo grove has been vandalised with carved names and dates, damaging stalks faster than the forest can regenerate.' },
+      { tag: 'Machiya Conversion', icon: '🏯', detail: 'Traditional wooden townhouses (machiya) are being demolished or converted into hotels at a rate of about 800 per year.' },
+    ],
   },
-  { id: 'bali', name: 'Bali', nameZh: '峇里島', country: 'Indonesia', lat: -8.3405, lng: 115.0920, region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1537996194471-76f24b4c0c45?w=1600',
-    intro: '神之島，2024 年起對遊客徵收觀光稅，水資源與文化保護成核心議題。',
+  {
+    id: 'bali',
+    name: 'Bali',
+    country: 'Indonesia',
+    lat: -8.3405,
+    lng: 115.0920,
+    region: 'Asia',
+    bg: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Tourism consumes ~65% of Bali\'s freshwater. A new tourist tax launched in 2024 to fund cultural and environmental protection.',
     issues: [
-      { tag: '環境破壞', icon: '💧', detail: '60% 水資源用於觀光業，本地稻田乾涸。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '網紅景點打卡文化稀釋宗教意義，神廟成為背景板。' },
-      { tag: '居民流失', icon: '🏚️', detail: '烏布、水明漾本地人被外國租客取代。' },
-      { tag: '交通崩潰', icon: '🛵', detail: '南部主要道路常態性塞車，事故率高。' },
-    ]
+      { tag: 'Rice Paddy Drought', icon: '💧', detail: '~65% of the island\'s water now serves hotels and pools; the centuries-old subak irrigation system supporting rice paddies is collapsing.' },
+      { tag: 'Sacred Site Disrespect', icon: '🛕', detail: 'Repeated incidents of nude photography on Mount Agung and other sacred sites led to fast-tracked deportations starting in 2023.' },
+      { tag: '2024 Tourist Tax', icon: '💰', detail: 'A 150,000 IDR (~$10) levy was introduced in February 2024, the first attempt to monetise tourism for cultural protection.' },
+      { tag: 'Canggu Gridlock', icon: '🛵', detail: 'Single-lane village roads in Canggu, designed for ox carts, now host permanent traffic jams of scooters and SUV rentals.' },
+    ],
   },
-  { id: 'phuket', name: 'Phuket', nameZh: '布吉島', country: 'Thailand', lat: 7.8804, lng: 98.3923, region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=1600',
-    intro: '泰國度假勝地，瑪雅灣曾因《海灘》電影爆紅後關閉復育 4 年。',
+  {
+    id: 'phuket',
+    name: 'Phuket',
+    country: 'Thailand',
+    lat: 7.8804,
+    lng: 98.3923,
+    region: 'Asia',
+    bg: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Coral cover near the Phi Phi Islands has fallen 80% in 30 years. Maya Bay was closed for four years to recover.',
     issues: [
-      { tag: '環境破壞', icon: '🐠', detail: '珊瑚礁因防曬乳與船錨破壞，覆蓋率下降 80%。' },
-      { tag: '交通崩潰', icon: '🚤', detail: '皮皮島單日船班超過容量 3 倍。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '本地漁村全面轉型觀光，傳統生計消失。' },
-      { tag: '居民流失', icon: '🏚️', detail: '海岸線土地被外資收購，本地人移居內陸。' },
-    ]
+      { tag: 'Coral Bleaching', icon: '🐠', detail: 'Sunscreen chemicals and boat anchors have driven coral cover near Phi Phi down 80% since 1990; bleaching events now hit annually.' },
+      { tag: 'Maya Bay Closure', icon: '🏖️', detail: 'Maya Bay was closed to tourists 2018-2022 to allow ecosystem recovery — a global benchmark for site-level rehabilitation.' },
+      { tag: '3× Capacity Boats', icon: '🚤', detail: 'Day-trip boats to Phi Phi routinely exceed reef carrying capacity by a factor of three, visible from satellite imagery.' },
+      { tag: 'Foreign Land Grab', icon: '💼', detail: 'Coastal villages have been bought up by overseas investors; multi-generation fishing families are relocating inland.' },
+    ],
   },
-  { id: 'boracay', name: 'Boracay', nameZh: '長灘島', country: 'Philippines', lat: 11.9674, lng: 121.9248, region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=1600',
-    intro: '2018 年因環境惡化全島封閉 6 個月整治，是過度旅遊復育經典案例。',
+  {
+    id: 'boracay',
+    name: 'Boracay',
+    country: 'Philippines',
+    lat: 11.9674,
+    lng: 121.9248,
+    region: 'Asia',
+    bg: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Closed for six months in 2018 after the President called it a "cesspool"; the rehabilitation became a global case study.',
     issues: [
-      { tag: '環境破壞', icon: '🌊', detail: '污水未處理直接排海，曾被總統稱為「化糞池」。' },
-      { tag: '居民流失', icon: '🏚️', detail: '原住民阿提族被迫退居山區。' },
-      { tag: '交通崩潰', icon: '🛵', detail: '單日遊客曾達 4 萬人，島上道路癱瘓。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '本地文化被夜生活與派對活動完全取代。' },
-    ]
+      { tag: 'Sewage "Cesspool"', icon: '🚽', detail: 'In 2018 President Duterte ordered a six-month full closure after raw sewage was being pumped directly into the sea.' },
+      { tag: 'Post-Rehab Zoning', icon: '🌊', detail: 'Reopening rules: no alcohol on White Beach, mandatory permits for hotels, and a daily visitor cap of 19,200.' },
+      { tag: 'Aeta Ati Displacement', icon: '👥', detail: 'The indigenous Aeta Ati community has been pushed into the mountainous interior as resort development consumed coastal villages.' },
+      { tag: 'Party Culture Takeover', icon: '🎉', detail: 'A small fishing village identity has been overwritten by international club tourism; local language use is in rapid decline.' },
+    ],
   },
-  { id: 'bangkok', name: 'Bangkok', nameZh: '曼谷', country: 'Thailand', lat: 13.7563, lng: 100.5018, region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1600',
-    intro: '連續多年蟬聯全球遊客最多城市，舊城區與河岸社區面臨改造壓力。',
+  {
+    id: 'bangkok',
+    name: 'Bangkok',
+    country: 'Thailand',
+    lat: 13.7563,
+    lng: 100.5018,
+    region: 'Asia',
+    bg: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1600&q=80&auto=format&fit=crop',
+    intro: 'The world\'s most-visited city for several years running. Air pollution and river-front gentrification are the central battles.',
     issues: [
-      { tag: '交通崩潰', icon: '🛺', detail: '考山路與大皇宮周邊長年壅塞，PM2.5 超標。' },
-      { tag: '居民流失', icon: '🏚️', detail: '河岸傳統高腳屋社區被酒店與商場取代。' },
-      { tag: '環境破壞', icon: '🌫️', detail: '空氣污染嚴重，每年因霾害關閉學校。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '水上市場多為觀光表演，已失去交易功能。' },
-    ]
+      { tag: 'PM2.5 Crisis', icon: '💨', detail: 'Khao San Road and the Old City routinely exceed WHO PM2.5 limits; in early 2024 schools closed citywide due to haze.' },
+      { tag: 'Grand Palace Overflow', icon: '🛕', detail: 'Queues exceed three hours; coordinated pickpocket and gem-scam networks specifically target queueing tourists.' },
+      { tag: 'River Stilt-House Erasure', icon: '🏘️', detail: 'Wooden stilt-house communities along the Chao Phraya are being demolished to make way for luxury hotels and shopping malls.' },
+      { tag: 'Tuk-Tuk Scams', icon: '🛺', detail: '"Closed temple" tuk-tuk detour scams targeting tourists damage Bangkok\'s reputation and the legitimate tuk-tuk economy.' },
+    ],
   },
-  { id: 'siemreap', name: 'Siem Reap', nameZh: '暹粒', country: 'Cambodia', lat: 13.3633, lng: 103.8564, region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=1600',
-    intro: '吳哥窟所在地，地下水超抽威脅古蹟結構穩定。',
+  {
+    id: 'siemreap',
+    name: 'Siem Reap',
+    country: 'Cambodia',
+    lat: 13.3633,
+    lng: 103.8564,
+    region: 'Asia',
+    bg: 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Hotel groundwater extraction is destabilising the foundations of the 12th-century Angkor temple complex.',
     issues: [
-      { tag: '環境破壞', icon: '🏛️', detail: '飯店業超抽地下水，吳哥古蹟地基下陷風險上升。' },
-      { tag: '交通崩潰', icon: '🚌', detail: '日出時段小吳哥同時湧入 5000 人。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '佛教儀式表演化，僧侶生活受干擾。' },
-      { tag: '居民流失', icon: '🏚️', detail: '當地農民因觀光開發被徵收土地。' },
-    ]
+      { tag: 'Angkor Foundation Sinking', icon: '🏛️', detail: 'Hotels pumping groundwater for swimming pools and laundry have lowered the water table; archaeologists fear foundation subsidence.' },
+      { tag: 'Sunrise Crush', icon: '🌅', detail: 'Up to 5,000 tourists gather at Angkor Wat for sunrise simultaneously; vendors and selfie sticks degrade the experience for everyone.' },
+      { tag: 'Monastic Disturbance', icon: '🙏', detail: 'Monks\' early-morning rituals are routinely interrupted by camera flashes; some monasteries now restrict tourist hours.' },
+      { tag: 'Farmer Land Seizure', icon: '🌾', detail: 'Rural land is being expropriated for hotel and resort development; compensation disputes are ongoing in regional courts.' },
+    ],
   },
-  { id: 'seoul', name: 'Seoul', nameZh: '首爾', country: 'South Korea', lat: 37.5665, lng: 126.9780, region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=1600',
-    intro: 'K-pop 與韓劇帶動觀光熱潮，北村韓屋村居民曾因遊客噪音抗議。',
+  {
+    id: 'seoul',
+    name: 'Seoul',
+    country: 'South Korea',
+    lat: 37.5665,
+    lng: 126.9780,
+    region: 'Asia',
+    bg: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=1600&q=80&auto=format&fit=crop',
+    intro: 'K-pop and K-drama tourism transformed traditional neighbourhoods. In 2024 Bukchon Hanok Village imposed quiet hours after years of resident protest.',
     issues: [
-      { tag: '居民流失', icon: '🏚️', detail: '北村韓屋村居民因遊客噪音與隱私問題搬離。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '傳統市場轉型為網紅打卡點，原始商業生態消失。' },
-      { tag: '交通崩潰', icon: '🚇', detail: '明洞、弘大商圈週末壅塞，地鐵超載。' },
-      { tag: '環境破壞', icon: '🌫️', detail: '景福宮周邊空氣品質因遊覽車排放下降。' },
-    ]
+      { tag: 'Bukchon Quiet Ordinance', icon: '🤫', detail: 'After eight years of resident campaigning, a 5pm-10am quiet zone now applies to Bukchon Hanok Village; fines start at 100,000 KRW.' },
+      { tag: 'Insadong Commercialisation', icon: '🛍️', detail: 'Traditional craft and calligraphy shops have been replaced by mass-market K-pop merchandise stores and cosmetic chains.' },
+      { tag: 'Hongdae Subway Overload', icon: '🚇', detail: 'Subway exits at Hongdae are temporarily closed during peak K-pop pilgrimage hours for crowd-flow safety.' },
+      { tag: 'Hanbok Photo Industry', icon: '🏯', detail: 'Gyeongbokgung visits are now ~80% rental-costume photo tourism; original civic and ceremonial uses have receded.' },
+    ],
   },
-  // Americas
-  { id: 'newyork', name: 'New York', nameZh: '紐約', country: 'USA', lat: 40.7128, lng: -74.0060, region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1600',
-    intro: '不夜城，時代廣場單日遊客曾達 36 萬，2023 年立法限制 Airbnb 短租。',
+
+  // ============ Americas ============
+  {
+    id: 'newyork',
+    name: 'New York',
+    country: 'USA',
+    lat: 40.7128,
+    lng: -74.0060,
+    region: 'Americas',
+    bg: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Times Square attracts 360,000 daily visitors. In 2023 the city effectively banned Airbnb-style short-term rentals citywide.',
     issues: [
-      { tag: '居民流失', icon: '🏚️', detail: '曼哈頓房租 10 年內上漲 47%，年輕人外流至外圍區。' },
-      { tag: '交通崩潰', icon: '🚕', detail: '中城塞車程度居全美之冠，2025 年實施擁堵收費。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '小義大利、唐人街傳統商家被連鎖品牌取代。' },
-      { tag: '環境破壞', icon: '🗑️', detail: '時代廣場日均產生 50 噸垃圾。' },
-    ]
+      { tag: 'Local Law 18', icon: '🏠', detail: 'Effective Sept 2023, Local Law 18 effectively banned short-term rentals under 30 days; Airbnb listings dropped ~80% overnight.' },
+      { tag: 'Congestion Pricing', icon: '🚗', detail: 'In 2025 New York became the first US city to charge a $9 toll on cars entering Manhattan below 60th Street.' },
+      { tag: 'Times Square Trash', icon: '🎄', detail: 'Times Square produces ~50 tons of waste per day during peak season; permanent dedicated cleanup crews now operate 24/7.' },
+      { tag: 'Chinatown Erosion', icon: '🥢', detail: 'Family-owned dim sum spots are closing as rents rise and the Cantonese-speaking community ages without successor businesses.' },
+    ],
   },
-  { id: 'machupicchu', name: 'Machu Picchu', nameZh: '馬丘比丘', country: 'Peru', lat: -13.1631, lng: -72.5450, region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=1600',
-    intro: '印加遺跡，2024 年因遊客過多再度限流至每日 4500 人。',
+  {
+    id: 'machupicchu',
+    name: 'Machu Picchu',
+    country: 'Peru',
+    lat: -13.1631,
+    lng: -72.5450,
+    region: 'Americas',
+    bg: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=1600&q=80&auto=format&fit=crop',
+    intro: 'In 2024 the daily visitor cap was tightened from 5,600 to 4,500 after archaeologists warned of irreversible step erosion.',
     issues: [
-      { tag: '環境破壞', icon: '🏔️', detail: '步道侵蝕嚴重，部分石階因踩踏龜裂。' },
-      { tag: '交通崩潰', icon: '🚂', detail: '熱水鎮火車與巴士運能飽和，旺季一票難求。' },
-      { tag: '文化稀釋', icon: '🎭', detail: 'Quechua 原住民被排除在主要觀光收益之外。' },
-      { tag: '居民流失', icon: '🏚️', detail: '熱水鎮原為小村，現已完全觀光化。' },
-    ]
+      { tag: 'Stone Step Cracks', icon: '🪜', detail: 'Inca-era steps show visible cracking and rounding under millions of footfalls; some sections have been re-routed onto wooden boardwalks.' },
+      { tag: 'Aguas Calientes Saturation', icon: '🚂', detail: 'The train town below the citadel is fully tourism-dependent; basic groceries cost 3× Cusco prices in high season.' },
+      { tag: '4,500/Day Cap', icon: '🎫', detail: 'In 2024 the daily entry cap was reduced from 5,600 to 4,500 across four time-banded circuits, after archaeologist pressure.' },
+      { tag: 'Quechua Exclusion', icon: '👥', detail: 'Indigenous Quechua communities surrounding the site receive less than 10% of tourism revenue, despite providing most service labour.' },
+    ],
   },
-  { id: 'cusco', name: 'Cusco', nameZh: '庫斯科', country: 'Peru', lat: -13.5320, lng: -71.9675, region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1531968455001-5c5272a41129?w=1600',
-    intro: '前印加帝國首都，海拔 3400m，每年百萬遊客衝擊高山生態。',
+  {
+    id: 'cusco',
+    name: 'Cusco',
+    country: 'Peru',
+    lat: -13.5320,
+    lng: -71.9675,
+    region: 'Americas',
+    bg: 'https://images.unsplash.com/photo-1531968455001-5c5272a41129?w=1600&q=80&auto=format&fit=crop',
+    intro: 'The former Inca capital sits at 3,400 m. Rapid arrivals from sea level routinely cause altitude-sickness incidents requiring oxygen.',
     issues: [
-      { tag: '文化稀釋', icon: '🎭', detail: '聖週傳統儀式被觀光化，宗教意義稀釋。' },
-      { tag: '居民流失', icon: '🏚️', detail: '武器廣場周邊住宅全數轉為旅館。' },
-      { tag: '環境破壞', icon: '🏔️', detail: '安地斯山脈高山生態因登山客數量大增受擾。' },
-      { tag: '交通崩潰', icon: '🚌', detail: '聖谷一日遊巴士造成主要道路堵塞。' },
-    ]
+      { tag: 'Altitude Health Crisis', icon: '⛰️', detail: 'Tourists flying directly from Lima to Cusco frequently experience acute mountain sickness; emergency oxygen is now a hotel-room standard.' },
+      { tag: 'Religious Commercialisation', icon: '🛐', detail: 'Holy Week (Semana Santa) processions are increasingly stage-managed for tour cameras; original Quechua-Catholic syncretic meaning is fading.' },
+      { tag: 'Plaza de Armas Conversion', icon: '🏨', detail: 'Nearly every colonial-era building around the Plaza de Armas has been converted to hotels, restaurants or souvenir shops.' },
+      { tag: 'Sacred Valley Bus Choke', icon: '🚌', detail: 'A single highway connects Cusco to the Sacred Valley; day-tour buses create gridlock that delays emergency vehicles.' },
+    ],
   },
-  { id: 'rio', name: 'Rio de Janeiro', nameZh: '里約熱內盧', country: 'Brazil', lat: -22.9068, lng: -43.1729, region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=1600',
-    intro: '嘉年華之都，貧民窟旅遊（Favela Tour）引發倫理爭議。',
+  {
+    id: 'rio',
+    name: 'Rio de Janeiro',
+    country: 'Brazil',
+    lat: -22.9068,
+    lng: -43.1729,
+    region: 'Americas',
+    bg: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Carnival capital of the Americas — but "favela tours" raise sharp ethical debates about tourism that frames poverty as spectacle.',
     issues: [
-      { tag: '文化稀釋', icon: '🎭', detail: '貧民窟旅遊將居民貧困景觀化，倫理爭議大。' },
-      { tag: '環境破壞', icon: '🌊', detail: '科帕卡瓦納海灘水質長期不達標。' },
-      { tag: '交通崩潰', icon: '🚠', detail: '基督山纜車旺季排隊超過 3 小時。' },
-      { tag: '居民流失', icon: '🏚️', detail: '伊帕內瑪等熱門海灘區房價飆升，本地中產被擠出。' },
-    ]
+      { tag: 'Favela Tour Ethics', icon: '🏘️', detail: 'Bus tours through Rocinha and other favelas photograph residents without consent; a growing local movement calls it "poverty tourism."' },
+      { tag: 'Copacabana Bacteria', icon: '🌊', detail: 'E. coli levels at Copacabana and Ipanema regularly exceed safe-bathing thresholds during summer storms.' },
+      { tag: 'Sugarloaf 3-Hour Wait', icon: '🚠', detail: 'Cable-car queues to Sugarloaf Mountain regularly exceed three hours, longer than the cable car operates safely.' },
+      { tag: 'Ipanema Pricing-Out', icon: '🏖️', detail: 'Middle-class residents are being displaced from Ipanema and Leblon as luxury short-term rentals pull units off the long-term market.' },
+    ],
   },
-  { id: 'cancun', name: 'Cancún', nameZh: '坎昆', country: 'Mexico', lat: 21.1619, lng: -86.8515, region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1552074284-5e88ef1aef18?w=1600',
-    intro: '加勒比海度假天堂，馬雅紅樹林因酒店開發消失 60%。',
+  {
+    id: 'cancun',
+    name: 'Cancún',
+    country: 'Mexico',
+    lat: 21.1619,
+    lng: -86.8515,
+    region: 'Americas',
+    bg: 'https://images.unsplash.com/photo-1552074284-5e88ef1aef18?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Resort construction has destroyed ~60% of the Riviera Maya\'s mangrove ecosystem, the original protection against hurricanes.',
     issues: [
-      { tag: '環境破壞', icon: '🐢', detail: '紅樹林被剷除蓋酒店，海龜產卵地大量消失。' },
-      { tag: '居民流失', icon: '🏚️', detail: '飯店員工被迫住在 30 公里外的貧民區。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '馬雅文化被簡化為主題公園表演。' },
-      { tag: '交通崩潰', icon: '🚌', detail: '酒店區單一道路，事故造成全區癱瘓。' },
-    ]
+      { tag: '60% Mangrove Loss', icon: '🌴', detail: 'Hotel-zone construction has cleared an estimated 60% of original mangrove cover, eliminating a key buffer against hurricanes.' },
+      { tag: 'Sea-Turtle Nesting Loss', icon: '🐢', detail: 'Hotel-zone night-time lighting disorients hatchlings; turtle volunteers patrol nightly to redirect them away from pools and roads.' },
+      { tag: 'Worker Exile', icon: '👷', detail: 'Hotel and restaurant staff commute from informal settlements 30+ km away; few can afford to live within the resort zone.' },
+      { tag: 'Maya Theme-Parking', icon: '🎭', detail: 'Maya culture is largely reduced to 30-minute "ceremonial" performances at all-inclusive resorts, divorced from living communities.' },
+    ],
   },
-  // Other
-  { id: 'cairo', name: 'Cairo', nameZh: '開羅', country: 'Egypt', lat: 30.0444, lng: 31.2357, region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1600',
-    intro: '金字塔之城，2024 年大埃及博物館開幕，遊客壓力轉向吉薩。',
+
+  // ============ Other ============
+  {
+    id: 'cairo',
+    name: 'Cairo',
+    country: 'Egypt',
+    lat: 30.0444,
+    lng: 31.2357,
+    region: 'Other',
+    bg: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1600&q=80&auto=format&fit=crop',
+    intro: 'The Grand Egyptian Museum opened in 2024, dramatically shifting visitor flows toward an already overloaded Giza Plateau.',
     issues: [
-      { tag: '環境破壞', icon: '🏜️', detail: '吉薩金字塔周邊空氣污染加速石灰岩風化。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '紀念品攤販強迫推銷，破壞參觀體驗。' },
-      { tag: '交通崩潰', icon: '🐪', detail: '金字塔區交通混亂，駱駝伕與計程車糾紛頻傳。' },
-      { tag: '居民流失', icon: '🏚️', detail: '吉薩村居民因觀光開發被迫遷移。' },
-    ]
+      { tag: 'Limestone Weathering', icon: '🏜️', detail: 'Air pollution and crowd-generated humidity are weathering Giza pyramid limestone at roughly ten times the natural rate.' },
+      { tag: 'GEM Opening Surge', icon: '🏛️', detail: 'The Grand Egyptian Museum opening has redirected millions of visitors to Giza, straining roads, parking and water infrastructure.' },
+      { tag: 'Camel Driver Aggression', icon: '🐪', detail: 'Aggressive touts and forced-sale tactics around the pyramids are widely cited as a top complaint, deterring repeat visits.' },
+      { tag: 'Nazlet Displacement', icon: '🏘️', detail: 'Families in Nazlet El-Semman village have been relocated multiple times to expand the tourist pedestrian zone.' },
+    ],
   },
-  { id: 'capetown', name: 'Cape Town', nameZh: '開普敦', country: 'South Africa', lat: -33.9249, lng: 18.4241, region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=1600',
-    intro: '2018 年「Day Zero」水危機後，旅遊業如何永續成全球案例。',
+  {
+    id: 'capetown',
+    name: 'Cape Town',
+    country: 'South Africa',
+    lat: -33.9249,
+    lng: 18.4241,
+    region: 'Other',
+    bg: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=1600&q=80&auto=format&fit=crop',
+    intro: 'In 2018 Cape Town came within 90 days of being the first major city in the world to run out of tap water.',
     issues: [
-      { tag: '環境破壞', icon: '💧', detail: '2018 年差點成為首個無水可用大城市，旅遊業耗水巨大。' },
-      { tag: '居民流失', icon: '🏚️', detail: 'V&A 海濱周邊房價飆升，本地有色人種社區被擠壓。' },
-      { tag: '文化稀釋', icon: '🎭', detail: 'Bo-Kaap 彩色街區成網紅景點，居民隱私受損。' },
-      { tag: '交通崩潰', icon: '🚗', detail: '桌山纜車旺季排隊達 4 小時。' },
-    ]
+      { tag: 'Day Zero Threat', icon: '💧', detail: 'In 2018 reservoir levels fell to 13.5%; "Day Zero" — the date municipal taps would shut off — was 90 days away before rains came.' },
+      { tag: 'Table Mountain Queue', icon: '🏔️', detail: 'Cable-car wait times to Table Mountain exceed four hours in peak season, effectively excluding elderly and disabled visitors.' },
+      { tag: 'Bo-Kaap Privacy War', icon: '🎨', detail: 'Residents of the colourful Bo-Kaap neighbourhood now charge tourists for photographs of their painted homes.' },
+      { tag: 'V&A Gentrification', icon: '🏘️', detail: 'Historic Coloured neighbourhoods near the V&A Waterfront have been progressively displaced by waterfront luxury development.' },
+    ],
   },
-  { id: 'sydney', name: 'Sydney', nameZh: '雪梨', country: 'Australia', lat: -33.8688, lng: 151.2093, region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600',
-    intro: '南半球門戶，邦代海灘 Instagram 化問題嚴重。',
+  {
+    id: 'sydney',
+    name: 'Sydney',
+    country: 'Australia',
+    lat: -33.8688,
+    lng: 151.2093,
+    region: 'Other',
+    bg: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Iconic harbour, second-highest house prices in the world. Bondi Beach is the global flashpoint for "Instagram tourism."',
     issues: [
-      { tag: '文化稀釋', icon: '🎭', detail: '邦代海灘成網紅打卡景點，當地衝浪文化被稀釋。' },
-      { tag: '環境破壞', icon: '🐠', detail: '大堡礁雖在昆士蘭，但雪梨港海洋生態同樣受遊輪影響。' },
-      { tag: '居民流失', icon: '🏚️', detail: '市中心房價達全球第二高，年輕人外流。' },
-      { tag: '交通崩潰', icon: '🚇', detail: '歌劇院周邊步行區旺季擁擠程度堪比香港。' },
-    ]
+      { tag: 'Bondi Instagram Effect', icon: '📱', detail: 'Bondi Beach is a global influencer location; the local surf-culture community largely no longer uses it on weekends.' },
+      { tag: 'Cruise-Ship Choke', icon: '🚢', detail: 'On cruise-arrival days Circular Quay and the Opera House forecourt are saturated within minutes of disembarkation.' },
+      { tag: '2nd-Highest House Prices', icon: '🏠', detail: 'Sydney has the second-highest house price-to-income ratio globally; under-30 residents are leaving the CBD permanently.' },
+      { tag: 'Wildlife Selfie Stress', icon: '🦘', detail: 'Manly koalas and Bondi-area sea lions show measurable cortisol elevation from tourist approach behaviour.' },
+    ],
   },
-  { id: 'galapagos', name: 'Galápagos', nameZh: '加拉巴哥群島', country: 'Ecuador', lat: -0.9538, lng: -90.9656, region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1526857240426-7b1c93ee066f?w=1600',
-    intro: '達爾文之島，特有種因外來物種與遊客活動面臨絕種威脅。',
+  {
+    id: 'galapagos',
+    name: 'Galápagos',
+    country: 'Ecuador',
+    lat: -0.9538,
+    lng: -90.9656,
+    region: 'Other',
+    bg: 'https://images.unsplash.com/photo-1517483000871-1dbf64a6e1c6?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Darwin\'s living laboratory. More than 60 endemic species are threatened by tourist-introduced invasive species.',
     issues: [
-      { tag: '環境破壞', icon: '🐢', detail: '外來物種入侵造成 60 種特有生物瀕危。' },
-      { tag: '居民流失', icon: '🏚️', detail: '島上居民移民問題嚴重，本地服務業空缺。' },
-      { tag: '交通崩潰', icon: '✈️', detail: '航班與郵輪數量年年突破上限。' },
-      { tag: '文化稀釋', icon: '🎭', detail: '本地漁業文化被觀光導覽取代。' },
-    ]
+      { tag: 'Invasive Species', icon: '🐢', detail: 'Tourist boats and cargo flights have introduced rats, ants and plants threatening 60+ endemic species, including giant tortoises.' },
+      { tag: 'Population Pressure', icon: '🏠', detail: 'Resident immigration is capped, but mainland labour migration to staff hotels creates a chronic informal-housing crisis.' },
+      { tag: 'Annual Visitor Cap', icon: '✈️', detail: 'Ecuador set a 200,000 annual cap in 2024; cruise day-trippers (not counted toward the cap) routinely push the real number higher.' },
+      { tag: 'Fishing-to-Tour Pivot', icon: '🐟', detail: 'Local fishing economies have been almost entirely replaced by guided-tour work, eroding subsistence food sovereignty.' },
+    ],
   },
-  { id: 'auckland', name: 'Auckland', nameZh: '奧克蘭', country: 'New Zealand', lat: -36.8485, lng: 174.7633, region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600',
-    intro: '紐西蘭門戶，毛利文化保護與郵輪觀光衝擊成主要議題。',
+  {
+    id: 'auckland',
+    name: 'Auckland',
+    country: 'New Zealand',
+    lat: -36.8485,
+    lng: 174.7633,
+    region: 'Other',
+    bg: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600&q=80&auto=format&fit=crop',
+    intro: 'Gateway to Aotearoa. Cruise-ship congestion and the commodification of Māori culture are central debates.',
     issues: [
-      { tag: '文化稀釋', icon: '🎭', detail: '毛利傳統儀式 Haka 商業化表演化。' },
-      { tag: '環境破壞', icon: '🌊', detail: '豪拉基灣海洋保護區因遊船活動受擾。' },
-      { tag: '居民流失', icon: '🏚️', detail: '市中心住宅成短租，本地房荒加劇。' },
-      { tag: '交通崩潰', icon: '🚢', detail: '郵輪靠港日市區交通壅塞嚴重。' },
-    ]
+      { tag: 'Haka Commercialisation', icon: '🌿', detail: 'Sacred Māori haka ceremonies are being reduced to airport welcome shows; iwi (tribal) groups are pushing for cultural-IP protections.' },
+      { tag: 'Hauraki Gulf Wildlife Stress', icon: '🌊', detail: 'Whale and dolphin tour boats in the Hauraki Gulf routinely exceed cetacean welfare guidelines on approach distance and engine noise.' },
+      { tag: 'Cruise-Day Gridlock', icon: '🚢', detail: 'Up to four cruise ships dock simultaneously, effectively doubling the Auckland CBD\'s daytime population.' },
+      { tag: 'Short-Term Rental Saturation', icon: '🏠', detail: 'About 25% of central Auckland\'s housing has been converted to short-term rental, deepening the regional housing crisis.' },
+    ],
   },
 ];
 
@@ -949,12 +1101,12 @@ function Globe({ onCitySelect }: { onCitySelect: (city: City) => void }) {
               <h1 className="text-xl font-light tracking-wide text-blue-900">
                 Global Sustainable Tourism <span className="font-semibold">AI Lab</span>
               </h1>
-              <p className="text-xs text-blue-600/70 mt-0.5">探索全球觀光永續挑戰</p>
+              <p className="text-xs text-blue-600/70 mt-0.5">Explore global sustainable tourism challenges</p>
             </div>
           </div>
           <div className="text-right">
             <p className="text-sm text-blue-700 font-medium">25 Cities</p>
-            <p className="text-xs text-blue-500/70">點擊光點探索 · 拖拽旋轉</p>
+            <p className="text-xs text-blue-500/70">Click a marker · Drag to rotate</p>
           </div>
         </div>
       </div>
@@ -977,7 +1129,7 @@ function Globe({ onCitySelect }: { onCitySelect: (city: City) => void }) {
             <div className="px-4 py-3 bg-gradient-to-r from-blue-700 to-cyan-600">
               <p className="text-[10px] text-cyan-100/90 tracking-[0.2em] font-medium">{hoveredCity.region.toUpperCase()}</p>
               <p className="text-lg font-semibold text-white leading-tight mt-0.5">{hoveredCity.name}</p>
-              <p className="text-xs text-cyan-100 mt-0.5">{hoveredCity.nameZh} · {hoveredCity.country}</p>
+              <p className="text-xs text-cyan-100 mt-0.5">{hoveredCity.country}</p>
             </div>
             <div className="p-4">
               <p className="text-xs text-gray-700 leading-relaxed mb-3">{hoveredCity.intro}</p>
@@ -990,7 +1142,7 @@ function Globe({ onCitySelect }: { onCitySelect: (city: City) => void }) {
               </div>
             </div>
             <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 text-[11px] text-blue-600 text-center border-t border-blue-100">
-              點擊深入探索 →
+              Click to explore →
             </div>
           </div>
         </div>
@@ -1024,9 +1176,9 @@ function AIChat({ city }: { city: City }) {
   }, [messages, loading]);
 
   const presetQuestions = [
-    `${city.nameZh}在 2030 年會面臨什麼樣的觀光危機？`,
-    `有哪些 AI 技術可以幫助減少${city.nameZh}的遊客人流量？`,
-    `比較${city.nameZh}與其他相似城市的成功轉型案例。`,
+    `What tourism crisis might ${city.name} face by 2030?`,
+    `Which AI technologies could help reduce visitor flow in ${city.name}?`,
+    `Compare ${city.name} with similar cities that successfully transitioned to sustainable tourism.`,
   ];
 
   const sendMessage = async (text: string) => {
@@ -1037,22 +1189,23 @@ function AIChat({ city }: { city: City }) {
     setInput('');
     setLoading(true);
 
-    const systemPrompt = `你是「Global Sustainable Tourism AI Lab」的 AI 永續旅遊顧問，專門協助學生分析全球觀光永續議題。
+    const systemPrompt = `You are the AI sustainable-tourism advisor for the "Global Sustainable Tourism AI Lab," helping students analyze global tourism sustainability issues in English.
 
-當前學生正在研究的城市：
-- 城市：${city.name} (${city.nameZh}), ${city.country}
-- 簡介：${city.intro}
-- 主要挑戰：
-${city.issues.map(i => `  ${i.icon} ${i.tag}：${i.detail}`).join('\n')}
+Current city the student is researching:
+- City: ${city.name}, ${city.country}
+- Brief: ${city.intro}
+- Key challenges:
+${city.issues.map((i) => `  ${i.icon} ${i.tag}: ${i.detail}`).join('\n')}
 
-請以教育性、客觀、有具體數據與案例的方式回答學生問題。回答時：
-1. 使用學生提問的語言（繁體中文或英文）
-2. 字數控制在 200 字以內，重點分明
-3. 適當引用真實案例或可能的解決方案
-4. 鼓勵學生進一步思考`;
+Answer in an educational, objective tone with concrete data and real cases. When you answer:
+1. Always reply in English (this is an English-language learning lab).
+2. Keep responses under 200 words, with clear points.
+3. Cite real cases or feasible solutions where relevant.
+4. End with one short follow-up question to keep the student thinking.`;
 
     try {
-      // NOTE: 走後端 proxy（待實作），避免在瀏覽器暴露 Anthropic API key
+      // NOTE: Routed through a backend proxy (to be implemented) so the
+      // Anthropic API key is never exposed to the browser.
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1066,7 +1219,7 @@ ${city.issues.map(i => `  ${i.icon} ${i.tag}：${i.detail}`).join('\n')}
       const aiText: string =
         data.content?.find((c: { type: string }) => c.type === 'text')?.text ||
         data.text ||
-        '抱歉，我暫時無法回應，請稍後再試。';
+        'Sorry, I cannot respond right now. Please try again later.';
       setMessages([...newMessages, { role: 'assistant', content: aiText }]);
     } catch (err) {
       setMessages([
@@ -1074,7 +1227,7 @@ ${city.issues.map(i => `  ${i.icon} ${i.tag}：${i.detail}`).join('\n')}
         {
           role: 'assistant',
           content:
-            '⚠️ 後端 AI proxy 尚未啟動。請設置 /api/chat 端點（連接 Anthropic API）後再試。',
+            '⚠️ The /api/chat backend proxy is not running yet. Please set up the proxy endpoint (connecting to the Anthropic API) and try again.',
         },
       ]);
     } finally {
@@ -1086,13 +1239,13 @@ ${city.issues.map(i => `  ${i.icon} ${i.tag}：${i.detail}`).join('\n')}
     <div className="flex flex-col h-full bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden">
       <div className="px-4 py-3 border-b border-white/20 flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-cyan-300" />
-        <h3 className="text-sm font-semibold text-white">AI 永續診斷</h3>
+        <h3 className="text-sm font-semibold text-white">AI Sustainability Diagnosis</h3>
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && (
           <div className="space-y-2">
-            <p className="text-xs text-white/70 mb-3">選擇一個問題開始，或自由提問：</p>
+            <p className="text-xs text-white/70 mb-3">Pick a question to start, or ask your own:</p>
             {presetQuestions.map((q, i) => (
               <button
                 key={i}
@@ -1136,7 +1289,7 @@ ${city.issues.map(i => `  ${i.icon} ${i.tag}：${i.detail}`).join('\n')}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-            placeholder="輸入問題..."
+            placeholder="Ask a question..."
             className="flex-1 bg-white/10 text-white placeholder-white/40 text-xs rounded-lg px-3 py-2 border border-white/20 focus:outline-none focus:border-cyan-400"
           />
           <button
@@ -1190,7 +1343,7 @@ function StudentBoard({ city, onClose }: { city: City; onClose: () => void }) {
       setPosts(updated);
       setContent('');
     } catch (err) {
-      alert('提交失敗，請稍後再試。');
+      alert('Submission failed. Please try again later.');
     } finally {
       setSubmitting(false);
     }
@@ -1207,9 +1360,9 @@ function StudentBoard({ city, onClose }: { city: City; onClose: () => void }) {
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              💬 {city.nameZh} · 24小時智慧限流計畫
+              💬 {city.name} · 24-Hour Smart Visitor Cap Plan
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">分享你的解決方案 · 全球學生都看得到</p>
+            <p className="text-xs text-gray-500 mt-0.5">Share your solution · Visible to students worldwide</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
             <X className="w-5 h-5 text-gray-500" />
@@ -1221,7 +1374,7 @@ function StudentBoard({ city, onClose }: { city: City; onClose: () => void }) {
             <input
               value={nickname}
               onChange={(e) => setNickname(e.target.value.slice(0, 20))}
-              placeholder="你的暱稱"
+              placeholder="Your nickname"
               className="w-32 text-sm rounded-lg px-3 py-2 border border-gray-200 focus:outline-none focus:border-blue-400"
             />
             <span className="text-xs text-gray-400 self-center">{content.length}/500</span>
@@ -1229,7 +1382,7 @@ function StudentBoard({ city, onClose }: { city: City; onClose: () => void }) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, 500))}
-            placeholder="例如：早上 7-10 點開放當地居民優先進入，下午限流 4000 人..."
+            placeholder="Example: 7-10 AM resident-priority entry; afternoon visitor cap of 4,000..."
             className="w-full text-sm rounded-lg px-3 py-2 border border-gray-200 focus:outline-none focus:border-blue-400 resize-none"
             rows={3}
           />
@@ -1239,15 +1392,15 @@ function StudentBoard({ city, onClose }: { city: City; onClose: () => void }) {
               disabled={submitting || !nickname.trim() || !content.trim()}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm px-4 py-2 rounded-lg transition"
             >
-              {submitting ? '提交中...' : '提交建議'}
+              {submitting ? 'Submitting...' : 'Submit suggestion'}
             </button>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-3">
-          {loading && <p className="text-sm text-gray-400 text-center">載入中...</p>}
+          {loading && <p className="text-sm text-gray-400 text-center">Loading...</p>}
           {!loading && posts.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-8">還沒有人留言，成為第一個分享解決方案的學生吧！</p>
+            <p className="text-sm text-gray-400 text-center py-8">No posts yet — be the first to share a solution!</p>
           )}
           {posts.map((p) => (
             <div key={p.id} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
@@ -1303,14 +1456,14 @@ function CityDashboard({ city, onBack }: { city: City; onBack: () => void }) {
           <div>
             <p className="text-xs tracking-widest text-cyan-300 mb-1">{city.region.toUpperCase()}</p>
             <h2 className="text-5xl font-light text-white">{city.name}</h2>
-            <p className="text-lg text-white/80 mt-1">{city.nameZh} · {city.country}</p>
+            <p className="text-lg text-white/80 mt-1">{city.country}</p>
             <p className="text-sm text-white/70 mt-3 max-w-xl leading-relaxed">{city.intro}</p>
           </div>
 
           <div className="mt-2">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-amber-300" />
-              <h3 className="text-sm font-semibold text-white tracking-wide">CORE CHALLENGES · 核心問題</h3>
+              <h3 className="text-sm font-semibold text-white tracking-wide">CORE CHALLENGES</h3>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {city.issues.map((issue, i) => {
