@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { RefreshCw, X } from 'lucide-react';
 import type { BoardPost, City } from '../types';
 
 const MAX_NICKNAME = 20;
@@ -8,6 +8,37 @@ const MAX_CONTENT = 500;
 function formatTime(ts: number) {
   const d = new Date(ts);
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+}
+
+async function readError(res: Response): Promise<string> {
+  try {
+    const body = await res.json();
+    if (typeof body?.error === 'string') return body.error;
+    return `HTTP ${res.status}`;
+  } catch {
+    return `HTTP ${res.status}`;
+  }
+}
+
+async function fetchPosts(cityId: string): Promise<BoardPost[]> {
+  const res = await fetch(`/api/board/${cityId}`);
+  if (!res.ok) throw new Error(await readError(res));
+  const data = (await res.json()) as { posts?: BoardPost[] };
+  return data.posts ?? [];
+}
+
+async function submitPost(
+  cityId: string,
+  input: { nickname: string; content: string }
+): Promise<BoardPost> {
+  const res = await fetch(`/api/board/${cityId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  const data = (await res.json()) as { post: BoardPost };
+  return data.post;
 }
 
 export default function StudentBoard({
@@ -22,38 +53,41 @@ export default function StudentBoard({
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const storageKey = `board:${city.id}`;
-
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const raw = localStorage.getItem(storageKey);
-      const list: BoardPost[] = raw ? JSON.parse(raw) : [];
-      setPosts(list.sort((a, b) => b.time - a.time));
-    } catch {
-      setPosts([]);
+      const fresh = await fetchPosts(city.id);
+      setPosts(fresh);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
-  }, [storageKey]);
+  }, [city.id]);
 
-  const submit = () => {
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const submit = async () => {
     if (!nickname.trim() || !content.trim() || content.length > MAX_CONTENT) return;
     setSubmitting(true);
-    const newPost: BoardPost = {
-      id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
-      nickname: nickname.trim(),
-      content: content.trim(),
-      time: Date.now(),
-    };
-    const updated = [newPost, ...posts];
+    setError(null);
     try {
-      localStorage.setItem(storageKey, JSON.stringify(updated));
-      setPosts(updated);
+      const post = await submitPost(city.id, {
+        nickname: nickname.trim(),
+        content: content.trim(),
+      });
+      // Optimistically prepend the new post — KV is eventually
+      // consistent so an immediate re-fetch may not see our own write
+      // for ~30–60s. Local prepend avoids that gap.
+      setPosts((prev) => [post, ...prev]);
       setContent('');
-    } catch {
-      alert('Submission failed. Please try again later.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setSubmitting(false);
     }
@@ -71,9 +105,21 @@ export default function StudentBoard({
               Share your solution · Visible to students worldwide
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={refresh}
+              disabled={loading}
+              aria-label="Refresh posts"
+              className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`}
+              />
+            </button>
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
         </div>
 
         <div className="px-6 py-4 border-b bg-blue-50/50">
@@ -104,11 +150,16 @@ export default function StudentBoard({
               {submitting ? 'Submitting...' : 'Submit suggestion'}
             </button>
           </div>
+          {error && (
+            <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-md px-2 py-1">
+              ⚠️ {error}
+            </p>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-3">
           {loading && <p className="text-sm text-gray-400 text-center">Loading...</p>}
-          {!loading && posts.length === 0 && (
+          {!loading && posts.length === 0 && !error && (
             <p className="text-sm text-gray-400 text-center py-8">
               No posts yet — be the first to share a solution!
             </p>

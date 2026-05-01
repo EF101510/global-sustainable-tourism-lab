@@ -13,15 +13,82 @@ interface DevMiddlewareConfig {
 }
 
 /**
- * Dev-only middleware that handles `POST /api/chat` by calling the same
- * shared handler that the production Vercel function uses. Loads the API
- * key + model + effort from `.env` / `.env.local` via Vite's `loadEnv`.
- * In production the `api/chat.ts` serverless function takes over instead.
+ * Dev-only middleware that handles `POST /api/chat` and the
+ * `/api/board/:city` board endpoints by calling the same shared handlers
+ * that the production Cloudflare Pages Functions use. Loads the
+ * Anthropic API key / model / effort from `.env` / `.env.local` via
+ * Vite's `loadEnv`. The board uses a per-process in-memory Map (resets
+ * on dev-server restart) — production wires `env.BOARD` to a real
+ * Workers KV namespace.
  */
-function apiChatDevMiddleware(config: DevMiddlewareConfig): Plugin {
+function apiDevMiddleware(config: DevMiddlewareConfig): Plugin {
+  // Shared in-memory KV substitute for the dev /api/board endpoints.
+  const memory = new Map<string, string>();
+  const boardStore = {
+    async get(key: string): Promise<string | null> {
+      return memory.get(key) ?? null;
+    },
+    async put(key: string, value: string): Promise<void> {
+      memory.set(key, value);
+    },
+  };
+
   return {
-    name: 'api-chat-dev',
+    name: 'api-dev',
     configureServer(server) {
+      // /api/board/:city — custom matcher (the prefix form
+      // `server.middlewares.use('/api/board', ...)` has been flaky for
+      // us under Vite 5's HTML-first middleware order).
+      server.middlewares.use(async (req, res, next) => {
+        const path = (req.url ?? '').split('?')[0];
+        const match = path.match(/^\/api\/board\/([^/]+)\/?$/);
+        if (!match) return next();
+        const cityId = match[1];
+
+        const { isValidCityId, listPosts, createPost, BoardValidationError } =
+          await import('./src/server/board-handler');
+
+        if (!isValidCityId(cityId)) {
+          send(res, 404, { error: 'Unknown city' });
+          return;
+        }
+
+        if (req.method === 'GET') {
+          try {
+            const posts = await listPosts(boardStore, cityId);
+            send(res, 200, { posts });
+          } catch (e) {
+            send(res, 500, {
+              error: e instanceof Error ? e.message : String(e),
+            });
+          }
+          return;
+        }
+
+        if (req.method === 'POST') {
+          let body: { nickname: string; content: string };
+          try {
+            body = JSON.parse(await readBody(req));
+          } catch {
+            send(res, 400, { error: 'Invalid JSON body' });
+            return;
+          }
+          try {
+            const post = await createPost(boardStore, cityId, body);
+            send(res, 201, { post });
+          } catch (e) {
+            const status = e instanceof BoardValidationError ? 400 : 500;
+            send(res, status, {
+              error: e instanceof Error ? e.message : String(e),
+            });
+          }
+          return;
+        }
+
+        send(res, 405, { error: 'Method Not Allowed' });
+      });
+
+      // /api/chat
       server.middlewares.use('/api/chat', async (req, res) => {
         if (req.method !== 'POST') {
           send(res, 405, { error: 'Method Not Allowed' });
@@ -62,6 +129,7 @@ function apiChatDevMiddleware(config: DevMiddlewareConfig): Plugin {
   };
 }
 
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
@@ -90,7 +158,7 @@ export default defineConfig(async ({ mode }) => {
   });
 
   return {
-    plugins: [react(), apiChatDevMiddleware({ apiKey, model, effort })],
+    plugins: [react(), apiDevMiddleware({ apiKey, model, effort })],
     server: {
       port: 5173,
       open: true,

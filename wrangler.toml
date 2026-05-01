@@ -30,9 +30,19 @@ pages_build_output_dir = "dist"
 ANTHROPIC_MODEL = "claude-sonnet-4-6"
 ANTHROPIC_EFFORT = "medium"
 
-# KV namespace for the future shared Student Board. Create the namespace
-# once with: `wrangler kv namespace create BOARD`, then paste the returned
-# id below and uncomment.
-# [[kv_namespaces]]
-# binding = "BOARD"
-# id = "<paste-the-id-here>"
+# KV namespace for the shared Student Board. Required for production.
+#
+# One-time setup:
+#   wrangler kv namespace create BOARD
+#   # → outputs an `id`, paste it below in place of <paste-the-id-here>
+#
+# (Optional — for `wrangler pages dev` local testing only)
+#   wrangler kv namespace create BOARD --preview
+#   # → outputs a `preview_id`, paste below as well
+#
+# After editing this file, commit + push so Cloudflare picks up the
+# binding on the next deploy.
+[[kv_namespaces]]
+binding = "BOARD"
+id = "<paste-the-id-here>"
+# preview_id = "<paste-the-preview-id-here>"
