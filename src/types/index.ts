@@ -37,6 +37,9 @@ export interface ChatMessage {
 export interface BoardPost {
   id: string;
   nickname: string;
+  /** Class / cohort the student is in (e.g. "7-A", "Year 10 Geography").
+   *  Field is named `studentClass` because `class` is a reserved word. */
+  studentClass: string;
   content: string;
   time: number;
 }

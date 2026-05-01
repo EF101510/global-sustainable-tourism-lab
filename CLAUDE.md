@@ -46,6 +46,29 @@ wrangler pages deploy dist --project-name=global-tourism-lab
 ## 檔案配置
 - `dist/` — Vite build 輸出（靜態檔 + `_redirects` 給 SPA fallback）
 - `functions/api/chat.ts` — Cloudflare Pages Function，處理 `/api/chat`
+- `functions/api/board/[city]/` — 學生留言板 (KV)，含 `index.ts` (GET/POST) 和 `[postId].ts` (PATCH/DELETE)
+- `functions/api/admin/` — Admin endpoints (login, credentials, posts CRUD, batch-delete)
 - `src/server/chat-handler.ts` — 共用核心邏輯，dev/prod 都用
-- `wrangler.toml` — KV / D1 binding 宣告（KV 預留給未來 Student Board）
-- 本地開發：`npm run dev` 仍走 Vite middleware（在 `vite.config.ts` 中），與 production Pages Function 共用同一個 `chat-handler`
+- `src/server/board-handler.ts` — 留言板共用邏輯（含 admin 操作）
+- `src/server/admin-handler.ts` — Admin 認證與 PBKDF2 密碼雜湊
+- `wrangler.toml` — KV binding 宣告 (BOARD)
+- 本地開發：`npm run dev` 仍走 Vite middleware（在 `vite.config.ts` 中），與 production Pages Function 共用同一套 handlers
+
+## Admin 後台 (`/admin`)
+老師專用的留言管理介面（學生看不到入口連結，需直接打 URL）。
+
+**預設帳密**：`admin` / `admin123`
+
+**第一次登入後請立刻改密碼** —— 進入 Admin 後右上角「Settings」→ 設新帳號和新密碼（至少 6 字元）→ 儲存。新帳密以 PBKDF2-SHA-256 (100k 次) 雜湊存進 KV 的 `admin:credentials`，之後預設帳密就失效。
+
+如果忘記改過後的密碼：
+```sh
+wrangler kv key delete --binding=BOARD admin:credentials
+```
+KV 紀錄被清掉後，`admin / admin123` 預設組合會再次生效。
+
+**Admin 功能**：
+- 跨城市檢視所有留言 (City 下拉篩選 + 全文搜尋)
+- 編輯任意留言（不需要 editToken）
+- 單筆刪除 / 勾選後批次刪除
+- 改帳號密碼

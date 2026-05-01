@@ -36,26 +36,134 @@ function apiDevMiddleware(config: DevMiddlewareConfig): Plugin {
   return {
     name: 'api-dev',
     configureServer(server) {
-      // /api/board/:city — custom matcher (the prefix form
-      // `server.middlewares.use('/api/board', ...)` has been flaky for
-      // us under Vite 5's HTML-first middleware order).
+      // /api/admin/* — handled before /api/board so the prefix doesn't
+      // get caught by the board matcher.
       server.middlewares.use(async (req, res, next) => {
         const path = (req.url ?? '').split('?')[0];
-        const match = path.match(/^\/api\/board\/([^/]+)\/?$/);
-        if (!match) return next();
-        const cityId = match[1];
+        if (!path.startsWith('/api/admin/')) return next();
 
-        const { isValidCityId, listPosts, createPost, BoardValidationError } =
-          await import('./src/server/board-handler');
+        const {
+          AdminAuthError,
+          AdminValidationError,
+          requireAdmin,
+          updateCredentials,
+          verifyCredentials,
+          isUsingDefaults,
+        } = await import('./src/server/admin-handler');
+        const {
+          adminDeletePost,
+          adminDeletePosts,
+          adminUpdatePost,
+          BoardNotFoundError,
+          BoardValidationError,
+          isValidCityId,
+          listAllPosts,
+        } = await import('./src/server/board-handler');
 
-        if (!isValidCityId(cityId)) {
-          send(res, 404, { error: 'Unknown city' });
+        const authHeader =
+          (req.headers['authorization'] as string | undefined) ?? null;
+
+        const guard = async (): Promise<true | { status: number; error: string }> => {
+          try {
+            await requireAdmin(boardStore, authHeader);
+            return true;
+          } catch (e) {
+            if (e instanceof AdminAuthError)
+              return { status: 401, error: e.message };
+            return {
+              status: 500,
+              error: e instanceof Error ? e.message : String(e),
+            };
+          }
+        };
+
+        // POST /api/admin/login
+        if (path === '/api/admin/login') {
+          if (req.method !== 'POST') {
+            send(res, 405, { error: 'Method Not Allowed' });
+            return;
+          }
+          let body: { username?: string; password?: string };
+          try {
+            body = JSON.parse(await readBody(req));
+          } catch {
+            send(res, 400, { error: 'Invalid JSON body' });
+            return;
+          }
+          const ok = await verifyCredentials(
+            boardStore,
+            body.username ?? '',
+            body.password ?? ''
+          );
+          if (!ok) {
+            send(res, 401, { error: 'Invalid username or password.' });
+            return;
+          }
+          send(res, 200, {
+            ok: true,
+            usingDefaults: await isUsingDefaults(boardStore),
+          });
           return;
         }
 
-        if (req.method === 'GET') {
+        // POST /api/admin/credentials
+        if (path === '/api/admin/credentials') {
+          if (req.method !== 'POST') {
+            send(res, 405, { error: 'Method Not Allowed' });
+            return;
+          }
+          const g = await guard();
+          if (g !== true) {
+            send(res, g.status, { error: g.error });
+            return;
+          }
+          let body: {
+            currentUsername?: string;
+            currentPassword?: string;
+            newUsername?: string;
+            newPassword?: string;
+          };
           try {
-            const posts = await listPosts(boardStore, cityId);
+            body = JSON.parse(await readBody(req));
+          } catch {
+            send(res, 400, { error: 'Invalid JSON body' });
+            return;
+          }
+          try {
+            const result = await updateCredentials(boardStore, {
+              currentUsername: body.currentUsername ?? '',
+              currentPassword: body.currentPassword ?? '',
+              newUsername: body.newUsername ?? '',
+              newPassword: body.newPassword ?? '',
+            });
+            send(res, 200, { ok: true, ...result });
+          } catch (e) {
+            if (e instanceof AdminAuthError) {
+              send(res, 401, { error: e.message });
+            } else if (e instanceof AdminValidationError) {
+              send(res, 400, { error: e.message });
+            } else {
+              send(res, 500, {
+                error: e instanceof Error ? e.message : String(e),
+              });
+            }
+          }
+          return;
+        }
+
+        // GET /api/admin/posts
+        if (path === '/api/admin/posts') {
+          if (req.method !== 'GET') {
+            send(res, 405, { error: 'Method Not Allowed' });
+            return;
+          }
+          const g = await guard();
+          if (g !== true) {
+            send(res, g.status, { error: g.error });
+            return;
+          }
+          try {
+            const posts = await listAllPosts(boardStore);
             send(res, 200, { posts });
           } catch (e) {
             send(res, 500, {
@@ -65,8 +173,187 @@ function apiDevMiddleware(config: DevMiddlewareConfig): Plugin {
           return;
         }
 
-        if (req.method === 'POST') {
-          let body: { nickname: string; content: string };
+        // POST /api/admin/posts/delete-batch
+        if (path === '/api/admin/posts/delete-batch') {
+          if (req.method !== 'POST') {
+            send(res, 405, { error: 'Method Not Allowed' });
+            return;
+          }
+          const g = await guard();
+          if (g !== true) {
+            send(res, g.status, { error: g.error });
+            return;
+          }
+          let body: { targets?: Array<{ cityId?: string; postId?: string }> };
+          try {
+            body = JSON.parse(await readBody(req));
+          } catch {
+            send(res, 400, { error: 'Invalid JSON body' });
+            return;
+          }
+          const targets = (body.targets ?? [])
+            .filter(
+              (t): t is { cityId: string; postId: string } =>
+                typeof t.cityId === 'string' && typeof t.postId === 'string'
+            )
+            .map((t) => ({ cityId: t.cityId, postId: t.postId }));
+          if (targets.length === 0) {
+            send(res, 400, { error: 'No targets provided.' });
+            return;
+          }
+          try {
+            const removed = await adminDeletePosts(boardStore, targets);
+            send(res, 200, { ok: true, removed });
+          } catch (e) {
+            send(res, 500, {
+              error: e instanceof Error ? e.message : String(e),
+            });
+          }
+          return;
+        }
+
+        // /api/admin/posts/:city/:postId  (PATCH | DELETE)
+        const itemMatch = path.match(
+          /^\/api\/admin\/posts\/([^/]+)\/([^/]+)\/?$/
+        );
+        if (itemMatch) {
+          const g = await guard();
+          if (g !== true) {
+            send(res, g.status, { error: g.error });
+            return;
+          }
+          const cityId = itemMatch[1];
+          const postId = itemMatch[2];
+          if (!isValidCityId(cityId)) {
+            send(res, 404, { error: 'Unknown city' });
+            return;
+          }
+          if (req.method === 'PATCH') {
+            let body: {
+              nickname?: string;
+              studentClass?: string;
+              content?: string;
+            };
+            try {
+              body = JSON.parse(await readBody(req));
+            } catch {
+              send(res, 400, { error: 'Invalid JSON body' });
+              return;
+            }
+            try {
+              const post = await adminUpdatePost(
+                boardStore,
+                cityId,
+                postId,
+                body
+              );
+              send(res, 200, { post });
+            } catch (e) {
+              if (e instanceof BoardValidationError)
+                send(res, 400, { error: e.message });
+              else if (e instanceof BoardNotFoundError)
+                send(res, 404, { error: e.message });
+              else
+                send(res, 500, {
+                  error: e instanceof Error ? e.message : String(e),
+                });
+            }
+            return;
+          }
+          if (req.method === 'DELETE') {
+            try {
+              await adminDeletePost(boardStore, cityId, postId);
+              send(res, 200, { ok: true });
+            } catch (e) {
+              if (e instanceof BoardNotFoundError)
+                send(res, 404, { error: e.message });
+              else
+                send(res, 500, {
+                  error: e instanceof Error ? e.message : String(e),
+                });
+            }
+            return;
+          }
+          send(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        send(res, 404, { error: 'Unknown admin endpoint' });
+      });
+
+      // /api/board/:city  and  /api/board/:city/:postId — custom matcher
+      // (the prefix form `server.middlewares.use('/api/board', ...)` has
+      // been flaky for us under Vite 5's HTML-first middleware order).
+      server.middlewares.use(async (req, res, next) => {
+        const path = (req.url ?? '').split('?')[0];
+        const listMatch = path.match(/^\/api\/board\/([^/]+)\/?$/);
+        const itemMatch = path.match(/^\/api\/board\/([^/]+)\/([^/]+)\/?$/);
+        if (!listMatch && !itemMatch) return next();
+
+        const cityId = (listMatch ?? itemMatch)![1];
+        const postId = itemMatch ? itemMatch[2] : null;
+
+        const {
+          isValidCityId,
+          listPosts,
+          createPost,
+          updatePost,
+          deletePost,
+          BoardValidationError,
+          BoardForbiddenError,
+          BoardNotFoundError,
+        } = await import('./src/server/board-handler');
+
+        if (!isValidCityId(cityId)) {
+          send(res, 404, { error: 'Unknown city' });
+          return;
+        }
+
+        // Collection: /api/board/:city
+        if (!postId) {
+          if (req.method === 'GET') {
+            try {
+              const posts = await listPosts(boardStore, cityId);
+              send(res, 200, { posts });
+            } catch (e) {
+              send(res, 500, {
+                error: e instanceof Error ? e.message : String(e),
+              });
+            }
+            return;
+          }
+
+          if (req.method === 'POST') {
+            let body: {
+              nickname: string;
+              studentClass: string;
+              content: string;
+            };
+            try {
+              body = JSON.parse(await readBody(req));
+            } catch {
+              send(res, 400, { error: 'Invalid JSON body' });
+              return;
+            }
+            try {
+              const result = await createPost(boardStore, cityId, body);
+              send(res, 201, result);
+            } catch (e) {
+              const status = e instanceof BoardValidationError ? 400 : 500;
+              send(res, status, {
+                error: e instanceof Error ? e.message : String(e),
+              });
+            }
+            return;
+          }
+
+          send(res, 405, { error: 'Method Not Allowed' });
+          return;
+        }
+
+        // Item: /api/board/:city/:postId
+        if (req.method === 'DELETE') {
+          let body: { editToken?: string };
           try {
             body = JSON.parse(await readBody(req));
           } catch {
@@ -74,10 +361,40 @@ function apiDevMiddleware(config: DevMiddlewareConfig): Plugin {
             return;
           }
           try {
-            const post = await createPost(boardStore, cityId, body);
-            send(res, 201, { post });
+            await deletePost(boardStore, cityId, postId, body.editToken ?? '');
+            send(res, 200, { ok: true });
           } catch (e) {
-            const status = e instanceof BoardValidationError ? 400 : 500;
+            let status = 500;
+            if (e instanceof BoardForbiddenError) status = 403;
+            else if (e instanceof BoardNotFoundError) status = 404;
+            send(res, status, {
+              error: e instanceof Error ? e.message : String(e),
+            });
+          }
+          return;
+        }
+
+        if (req.method === 'PATCH') {
+          let body: {
+            editToken: string;
+            nickname?: string;
+            studentClass?: string;
+            content?: string;
+          };
+          try {
+            body = JSON.parse(await readBody(req));
+          } catch {
+            send(res, 400, { error: 'Invalid JSON body' });
+            return;
+          }
+          try {
+            const post = await updatePost(boardStore, cityId, postId, body);
+            send(res, 200, { post });
+          } catch (e) {
+            let status = 500;
+            if (e instanceof BoardValidationError) status = 400;
+            else if (e instanceof BoardForbiddenError) status = 403;
+            else if (e instanceof BoardNotFoundError) status = 404;
             send(res, status, {
               error: e instanceof Error ? e.message : String(e),
             });

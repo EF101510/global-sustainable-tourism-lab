@@ -1,13 +1,114 @@
-import { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Pencil, RefreshCw, Trash2, X } from 'lucide-react';
 import type { BoardPost, City } from '../types';
 
 const MAX_NICKNAME = 20;
+const MAX_CLASS = 30;
 const MAX_CONTENT = 500;
 
 function formatTime(ts: number) {
   const d = new Date(ts);
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+}
+
+/**
+ * Per-city map of postId → editToken. The token is returned exactly
+ * once when a post is created, and only this client keeps it. If the
+ * user clears localStorage they lose the ability to edit their own
+ * past posts — that's expected: this is a classroom tool, not auth.
+ */
+function tokenStorageKey(cityId: string): string {
+  return `board:editTokens:${cityId}`;
+}
+
+function readTokens(cityId: string): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(tokenStorageKey(cityId));
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeTokens(cityId: string, tokens: Record<string, string>): void {
+  try {
+    localStorage.setItem(tokenStorageKey(cityId), JSON.stringify(tokens));
+  } catch {
+    // Storage full / disabled — silently degrade. The post still
+    // exists server-side; the user just can't edit it from this
+    // browser.
+  }
+}
+
+/**
+ * App-wide identity for the board. Once a student posts for the first
+ * time, we pin their (nickname, studentClass) here and lock the form
+ * so subsequent posts use the same identity. They can reset via
+ * "Change identity", which also clears all editTokens (the new
+ * identity has no claim on the previous student's posts).
+ *
+ * Same trust model as editToken: client-only, honor system. A
+ * determined student can wipe localStorage to start over — acceptable
+ * for a classroom tool.
+ */
+const IDENTITY_KEY = 'board:identity';
+const TOKEN_KEY_PREFIX = 'board:editTokens:';
+
+interface BoardIdentity {
+  nickname: string;
+  studentClass: string;
+  lockedAt: number;
+}
+
+function readIdentity(): BoardIdentity | null {
+  try {
+    const raw = localStorage.getItem(IDENTITY_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      typeof parsed.nickname === 'string' &&
+      typeof parsed.studentClass === 'string' &&
+      parsed.nickname.trim() &&
+      parsed.studentClass.trim()
+    ) {
+      return {
+        nickname: parsed.nickname,
+        studentClass: parsed.studentClass,
+        lockedAt: Number(parsed.lockedAt) || 0,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeIdentity(id: BoardIdentity): void {
+  try {
+    localStorage.setItem(IDENTITY_KEY, JSON.stringify(id));
+  } catch {
+    // ignore
+  }
+}
+
+function clearIdentityAndTokens(): void {
+  try {
+    localStorage.removeItem(IDENTITY_KEY);
+    // Also wipe every per-city editTokens map so the new identity
+    // can't claim posts that the previous identity made.
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(TOKEN_KEY_PREFIX)) keysToRemove.push(k);
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // ignore
+  }
 }
 
 async function readError(res: Response): Promise<string> {
@@ -29,16 +130,43 @@ async function fetchPosts(cityId: string): Promise<BoardPost[]> {
 
 async function submitPost(
   cityId: string,
-  input: { nickname: string; content: string }
-): Promise<BoardPost> {
+  input: { nickname: string; studentClass: string; content: string }
+): Promise<{ post: BoardPost; editToken: string }> {
   const res = await fetch(`/api/board/${cityId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
   if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as { post: BoardPost; editToken: string };
+}
+
+async function patchPost(
+  cityId: string,
+  postId: string,
+  input: { editToken: string; content: string }
+): Promise<BoardPost> {
+  const res = await fetch(`/api/board/${cityId}/${postId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(await readError(res));
   const data = (await res.json()) as { post: BoardPost };
   return data.post;
+}
+
+async function deletePostRequest(
+  cityId: string,
+  postId: string,
+  editToken: string
+): Promise<void> {
+  const res = await fetch(`/api/board/${cityId}/${postId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ editToken }),
+  });
+  if (!res.ok) throw new Error(await readError(res));
 }
 
 export default function StudentBoard({
@@ -50,10 +178,40 @@ export default function StudentBoard({
 }) {
   const [posts, setPosts] = useState<BoardPost[]>([]);
   const [nickname, setNickname] = useState('');
+  const [studentClass, setStudentClass] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tokens, setTokens] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [identity, setIdentity] = useState<BoardIdentity | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  useEffect(() => {
+    setTokens(readTokens(city.id));
+  }, [city.id]);
+
+  // On mount: hydrate identity and pre-fill the locked fields.
+  useEffect(() => {
+    const id = readIdentity();
+    if (id) {
+      setIdentity(id);
+      setNickname(id.nickname);
+      setStudentClass(id.studentClass);
+    }
+  }, []);
+
+  const identityLocked = identity !== null;
+
+  const resetIdentity = () => {
+    clearIdentityAndTokens();
+    setIdentity(null);
+    setTokens({});
+    setNickname('');
+    setStudentClass('');
+    setConfirmReset(false);
+  };
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -73,18 +231,40 @@ export default function StudentBoard({
   }, [refresh]);
 
   const submit = async () => {
-    if (!nickname.trim() || !content.trim() || content.length > MAX_CONTENT) return;
+    if (
+      !nickname.trim() ||
+      !studentClass.trim() ||
+      !content.trim() ||
+      content.length > MAX_CONTENT
+    )
+      return;
     setSubmitting(true);
     setError(null);
     try {
-      const post = await submitPost(city.id, {
+      const { post, editToken } = await submitPost(city.id, {
         nickname: nickname.trim(),
+        studentClass: studentClass.trim(),
         content: content.trim(),
       });
       // Optimistically prepend the new post — KV is eventually
       // consistent so an immediate re-fetch may not see our own write
       // for ~30–60s. Local prepend avoids that gap.
       setPosts((prev) => [post, ...prev]);
+      setTokens((prev) => {
+        const next = { ...prev, [post.id]: editToken };
+        writeTokens(city.id, next);
+        return next;
+      });
+      // First successful submit pins this browser's identity.
+      if (!identity) {
+        const next: BoardIdentity = {
+          nickname: post.nickname,
+          studentClass: post.studentClass,
+          lockedAt: Date.now(),
+        };
+        writeIdentity(next);
+        setIdentity(next);
+      }
       setContent('');
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -127,13 +307,47 @@ export default function StudentBoard({
             <input
               value={nickname}
               onChange={(e) => setNickname(e.target.value.slice(0, MAX_NICKNAME))}
-              placeholder="Your nickname"
-              className="w-32 text-sm rounded-lg px-3 py-2 border border-gray-200 focus:outline-none focus:border-blue-400"
+              placeholder="Nickname"
+              readOnly={identityLocked}
+              aria-readonly={identityLocked}
+              title={identityLocked ? 'Locked. Use "Change identity" to reset.' : undefined}
+              className={`w-32 text-sm rounded-lg px-3 py-2 border focus:outline-none ${
+                identityLocked
+                  ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-not-allowed'
+                  : 'border-gray-200 focus:border-blue-400'
+              }`}
             />
-            <span className="text-xs text-gray-400 self-center">
+            <input
+              value={studentClass}
+              onChange={(e) => setStudentClass(e.target.value.slice(0, MAX_CLASS))}
+              placeholder="Class (e.g. 7-A)"
+              readOnly={identityLocked}
+              aria-readonly={identityLocked}
+              title={identityLocked ? 'Locked. Use "Change identity" to reset.' : undefined}
+              className={`w-40 text-sm rounded-lg px-3 py-2 border focus:outline-none ${
+                identityLocked
+                  ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-not-allowed'
+                  : 'border-gray-200 focus:border-blue-400'
+              }`}
+            />
+            <span className="text-xs text-gray-400 self-center ml-auto">
               {content.length}/{MAX_CONTENT}
             </span>
           </div>
+          {identityLocked && (
+            <p className="text-[11px] text-gray-500 -mt-1 mb-2">
+              Posting as <span className="font-medium">{identity?.nickname}</span>
+              {' · '}
+              {identity?.studentClass}
+              {' · '}
+              <button
+                onClick={() => setConfirmReset(true)}
+                className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+              >
+                Change identity
+              </button>
+            </p>
+          )}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, MAX_CONTENT))}
@@ -144,7 +358,12 @@ export default function StudentBoard({
           <div className="flex justify-end mt-2">
             <button
               onClick={submit}
-              disabled={submitting || !nickname.trim() || !content.trim()}
+              disabled={
+                submitting ||
+                !nickname.trim() ||
+                !studentClass.trim() ||
+                !content.trim()
+              }
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm px-4 py-2 rounded-lg transition"
             >
               {submitting ? 'Submitting...' : 'Submit suggestion'}
@@ -164,17 +383,265 @@ export default function StudentBoard({
               No posts yet — be the first to share a solution!
             </p>
           )}
-          {posts.map((p) => (
-            <div key={p.id} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-gray-700">{p.nickname}</span>
-                <span className="text-xs text-gray-400">{formatTime(p.time)}</span>
-              </div>
-              <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
-                {p.content}
-              </p>
-            </div>
-          ))}
+          {confirmReset && (
+            <ConfirmDialog
+              title="Change your identity?"
+              body="Future posts will use a new name. Your existing posts keep the old name, and you won't be able to edit them from this browser anymore."
+              confirmLabel="Change identity"
+              onCancel={() => setConfirmReset(false)}
+              onConfirm={resetIdentity}
+            />
+          )}
+          {posts.map((p) =>
+            editingId === p.id ? (
+              <EditPostRow
+                key={p.id}
+                post={p}
+                editToken={tokens[p.id] ?? ''}
+                cityId={city.id}
+                onCancel={() => setEditingId(null)}
+                onSaved={(updated) => {
+                  setPosts((prev) =>
+                    prev.map((x) => (x.id === updated.id ? updated : x))
+                  );
+                  setEditingId(null);
+                }}
+              />
+            ) : (
+              <PostRow
+                key={p.id}
+                post={p}
+                canManage={Boolean(tokens[p.id])}
+                cityId={city.id}
+                editToken={tokens[p.id] ?? ''}
+                onEdit={() => setEditingId(p.id)}
+                onDeleted={() => {
+                  setPosts((prev) => prev.filter((x) => x.id !== p.id));
+                  setTokens((prev) => {
+                    if (!(p.id in prev)) return prev;
+                    const next = { ...prev };
+                    delete next[p.id];
+                    writeTokens(city.id, next);
+                    return next;
+                  });
+                }}
+              />
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PostRow({
+  post,
+  canManage,
+  cityId,
+  editToken,
+  onEdit,
+  onDeleted,
+}: {
+  post: BoardPost;
+  canManage: boolean;
+  cityId: string;
+  editToken: string;
+  onEdit: () => void;
+  onDeleted: () => void;
+}) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const doDelete = async () => {
+    setDeleting(true);
+    setErr(null);
+    try {
+      await deletePostRequest(cityId, post.id, editToken);
+      setConfirmDelete(false);
+      onDeleted();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-baseline gap-2">
+            <span className="text-sm font-semibold text-gray-700">{post.nickname}</span>
+            {post.studentClass && (
+              <span className="text-xs text-gray-500">· {post.studentClass}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">{formatTime(post.time)}</span>
+            {canManage && (
+              <>
+                <button
+                  onClick={onEdit}
+                  aria-label="Edit post"
+                  className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  aria-label="Delete post"
+                  className="p-1 rounded hover:bg-rose-100 text-gray-500 hover:text-rose-600 transition"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
+          {post.content}
+        </p>
+        {err && (
+          <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-md px-2 py-1">
+            ⚠️ {err}
+          </p>
+        )}
+      </div>
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete this post?"
+          body="This will permanently remove your post for everyone. This cannot be undone."
+          confirmLabel={deleting ? 'Deleting...' : 'Delete'}
+          onCancel={() => (deleting ? undefined : setConfirmDelete(false))}
+          onConfirm={() => {
+            if (!deleting) doDelete();
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function EditPostRow({
+  post,
+  editToken,
+  cityId,
+  onCancel,
+  onSaved,
+}: {
+  post: BoardPost;
+  editToken: string;
+  cityId: string;
+  onCancel: () => void;
+  onSaved: (updated: BoardPost) => void;
+}) {
+  const [content, setContent] = useState(post.content);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const dirty = useMemo(
+    () => content.trim() !== post.content,
+    [content, post.content]
+  );
+
+  const save = async () => {
+    if (!content.trim()) return;
+    setSaving(true);
+    setErr(null);
+    try {
+      const updated = await patchPost(cityId, post.id, {
+        editToken,
+        content: content.trim(),
+      });
+      onSaved(updated);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-baseline gap-2">
+          <span className="text-sm font-semibold text-gray-700">{post.nickname}</span>
+          {post.studentClass && (
+            <span className="text-xs text-gray-500">· {post.studentClass}</span>
+          )}
+        </div>
+        <span className="text-xs text-gray-400">
+          {content.length}/{MAX_CONTENT}
+        </span>
+      </div>
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value.slice(0, MAX_CONTENT))}
+        className="w-full text-sm rounded-lg px-3 py-2 border border-gray-200 focus:outline-none focus:border-blue-400 resize-none bg-white"
+        rows={3}
+      />
+      <div className="flex items-center justify-end gap-2 mt-2">
+        <button
+          onClick={onCancel}
+          className="text-sm text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={save}
+          disabled={saving || !dirty || !content.trim()}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm px-4 py-1.5 rounded-lg transition"
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+      {err && (
+        <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-md px-2 py-1">
+          ⚠️ {err}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ConfirmDialog({
+  title,
+  body,
+  confirmLabel,
+  onCancel,
+  onConfirm,
+}: {
+  title: string;
+  body: string;
+  confirmLabel: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[55] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h4 className="text-base font-semibold text-gray-900">{title}</h4>
+        <p className="mt-2 text-sm text-gray-600 leading-relaxed">{body}</p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="text-sm text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="bg-rose-600 hover:bg-rose-700 text-white text-sm px-4 py-1.5 rounded-lg transition"
+          >
+            {confirmLabel}
+          </button>
         </div>
       </div>
     </div>

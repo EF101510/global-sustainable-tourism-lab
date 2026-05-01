@@ -4,14 +4,16 @@ import {
   isValidCityId,
   listPosts,
   type CreatePostInput,
-} from '../../../src/server/board-handler';
+} from '../../../../src/server/board-handler';
 
 /**
  * Cloudflare Pages Function for the shared Student Board.
  *
  * Routes:
- *   GET  /api/board/:city  → { posts: BoardPost[] }
- *   POST /api/board/:city  → body { nickname, content } → { post: BoardPost }
+ *   GET  /api/board/:city          → { posts: BoardPost[] }
+ *   POST /api/board/:city          → body { nickname, studentClass, content }
+ *                                    → { post, editToken }
+ *   PATCH /api/board/:city/:postId → handled in ./[postId].ts
  *
  * Storage: Workers KV under key `board:${cityId}`. Free tier (100 K
  * reads/day, 1 K writes/day) easily covers a class. Eventual
@@ -80,8 +82,8 @@ export const onRequestPost: PagesFunction<Env, 'city'> = async ({
   }
 
   try {
-    const post = await createPost(env.BOARD, cityId, body);
-    return json({ post }, 201);
+    const result = await createPost(env.BOARD, cityId, body);
+    return json(result, 201);
   } catch (e) {
     if (e instanceof BoardValidationError) {
       return json({ error: e.message }, 400);
