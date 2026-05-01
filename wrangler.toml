@@ -1,28 +1,34 @@
-# Cloudflare Pages config. Mainly used for `wrangler pages dev` and to
-# declare bindings (KV / D1 / R2) in version control. The Pages dashboard
-# UI mirrors these settings; either source works.
+# Cloudflare Pages config. With this file present, Cloudflare reads
+# plaintext environment variables from `[vars]` here (NOT from the Pages
+# dashboard "Environment variables" page — that's only for Secrets when
+# wrangler.toml exists).
 #
-# Deployment summary:
-#   1. `npm install -g wrangler` (one-time)
-#   2. `wrangler login`
-#   3. `wrangler pages project create global-tourism-lab`  (one-time)
-#   4. `npm run build`
-#   5. `wrangler pages deploy dist`
-#   OR connect this repo via the Pages dashboard for git-push deploys.
-#
-# Setting secrets (for production):
-#   wrangler pages secret put ANTHROPIC_API_KEY --project-name=global-tourism-lab
-#   wrangler pages secret put ANTHROPIC_MODEL   --project-name=global-tourism-lab
-#   wrangler pages secret put ANTHROPIC_EFFORT  --project-name=global-tourism-lab
+# Two-step deploy summary:
+#   1. ANTHROPIC_API_KEY (Secret)  — set via Pages dashboard
+#                                    Settings → Variables and Secrets,
+#                                    OR via CLI:
+#                                    `wrangler pages secret put ANTHROPIC_API_KEY \
+#                                       --project-name=global-sustainable-tourism-lab`
+#   2. Push code (or `wrangler pages deploy dist` from local) — model
+#      and effort below are picked up automatically.
 #
 # Local Pages-runtime testing (optional — Vite dev middleware is faster
 # for iterating; only use this when you specifically want to exercise the
 # Workers runtime or KV bindings):
 #   npm run build && wrangler pages dev dist
 
-name = "global-tourism-lab"
+name = "global-sustainable-tourism-lab"
 compatibility_date = "2026-04-01"
 pages_build_output_dir = "dist"
+
+# Plaintext runtime variables. Edit + commit + push to change.
+# Available models — see `.env.example` for prices and notes:
+#   claude-opus-4-7  / claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5
+# Available effort levels:
+#   low | medium | high | xhigh (Opus 4.7 only) | max (Opus tier only)
+[vars]
+ANTHROPIC_MODEL = "claude-sonnet-4-6"
+ANTHROPIC_EFFORT = "medium"
 
 # KV namespace for the future shared Student Board. Create the namespace
 # once with: `wrangler kv namespace create BOARD`, then paste the returned
