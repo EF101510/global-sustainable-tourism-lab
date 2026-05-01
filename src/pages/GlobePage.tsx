@@ -72,7 +72,9 @@ export default function GlobePage() {
   const handleCitySelect = useCallback(
     (city: City) => {
       preloadImages(city.bg);
-      navigate(`/city/${city.id}`);
+      // `fromGlobe` lets the dashboard fade in from black, mirroring the
+      // black overlay we just animated up during the zoom-in.
+      navigate(`/city/${city.id}`, { state: { fromGlobe: true } });
     },
     [navigate]
   );

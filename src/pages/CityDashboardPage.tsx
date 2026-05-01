@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -15,9 +15,12 @@ import IssueCard from '../components/IssueCard';
 import StudentBoard from '../components/StudentBoard';
 import { CITIES } from '../data/cities';
 
+const ENTRY_FADE_DURATION_MS = 700;
+
 export default function CityDashboardPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   // A single key tracks which card is expanded across the whole panel —
   // issues and the carrying-capacity card share this state, so opening any
   // one of them collapses whichever was open before.
@@ -26,6 +29,26 @@ export default function CityDashboardPage() {
   // Preview mode: hides all chrome (top bar, panels, AI bubble) so the
   // background imagery and the carousel dots are the only thing on screen.
   const [previewMode, setPreviewMode] = useState(false);
+
+  // Did we arrive via a globe-marker click? If so, render an opaque black
+  // overlay on first paint and fade it out — this picks up smoothly from
+  // the black overlay GlobePage just animated up during the zoom-in, so
+  // the user sees a continuous black-to-photo transition instead of a
+  // hard cut. Captured once at mount via lazy state init.
+  const [fadingFromBlack, setFadingFromBlack] = useState<boolean>(() =>
+    Boolean(
+      (location.state as { fromGlobe?: boolean } | null)?.fromGlobe
+    )
+  );
+
+  // Trigger the fade on the next frame so the initial paint at opacity-100
+  // is preserved before transitioning to 0.
+  useEffect(() => {
+    if (!fadingFromBlack) return;
+    const t = window.setTimeout(() => setFadingFromBlack(false), 16);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Reset expansion + preview state when navigating to a different city.
   useEffect(() => {
@@ -165,6 +188,20 @@ export default function CityDashboardPage() {
       </button>
 
       {showBoard && <StudentBoard city={city} onClose={() => setShowBoard(false)} />}
+
+      {/* Entry fade — covers everything in opaque black on first paint
+          when we arrived from the globe (state.fromGlobe), then fades to
+          0 over ENTRY_FADE_DURATION_MS so the user sees a smooth
+          black-to-photo transition that picks up where the globe's
+          zoom-in overlay left off. `pointer-events-none` keeps it
+          click-through once invisible. */}
+      <div
+        className="absolute inset-0 z-[60] bg-black pointer-events-none"
+        style={{
+          opacity: fadingFromBlack ? 1 : 0,
+          transition: `opacity ${ENTRY_FADE_DURATION_MS}ms ease-out`,
+        }}
+      />
     </div>
   );
 }
