@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { ArrowLeft, Send, MessageSquare, Sparkles, X, Globe2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Send, MessageSquare, Sparkles, X, Globe2, AlertTriangle } from 'lucide-react';
 
 // ============ Types ============
 export interface CityIssue {
@@ -16,7 +16,7 @@ export interface City {
   lat: number;
   lng: number;
   region: 'Europe' | 'Asia' | 'Americas' | 'Other';
-  bg: string;
+  bg: string[];
   intro: string;
   issues: CityIssue[];
 }
@@ -43,7 +43,12 @@ const CITIES: City[] = [
     lat: 45.4408,
     lng: 12.3155,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Venezia_aerial_view.jpg/1280px-Venezia_aerial_view.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Rialto_vista_dietra-camerlenghi.JPG/1280px-Rialto_vista_dietra-camerlenghi.JPG',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Campanile_of_St._Mark%27s_Basilica_-_remote_view.jpg/1280px-Campanile_of_St._Mark%27s_Basilica_-_remote_view.jpg',
+    ],
     intro: 'The fabled lagoon city hosts ~30 million visitors a year against a resident population that has fallen below 50,000.',
     issues: [
       { tag: 'Cruise Ship Erosion', icon: '🚢', detail: 'Wakes from large cruise ships erode the lagoon; the city is sinking ~2 mm per year. Ships over 25,000 tons were banned from St. Mark\'s Basin in 2021.' },
@@ -59,7 +64,12 @@ const CITIES: City[] = [
     lat: 41.3851,
     lng: 2.1734,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Aerial_view_of_Barcelona%2C_Spain_%2851227309370%29_edited.jpg/1280px-Aerial_view_of_Barcelona%2C_Spain_%2851227309370%29_edited.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Sagrada_Familia_6-12-25_%28cropped%29.jpg/500px-Sagrada_Familia_6-12-25_%28cropped%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Torre_Gl%C3%B2ries_nocturna.jpg/1280px-Torre_Gl%C3%B2ries_nocturna.jpg',
+    ],
     intro: 'Annual visitors exceed the city population more than 20-fold. In 2024 the mayor announced a complete short-term-rental ban by 2028.',
     issues: [
       { tag: '2028 Airbnb Ban', icon: '🚫', detail: 'Mayor Jaume Collboni announced in mid-2024 that all 10,000+ short-term tourist licences will be phased out by November 2028.' },
@@ -75,7 +85,12 @@ const CITIES: City[] = [
     lat: 52.3676,
     lng: 4.9041,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/KeizersgrachtReguliersgrachtAmsterdam.jpg/1280px-KeizersgrachtReguliersgrachtAmsterdam.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Concertgebouw_from_Museumplein_2539.jpg/1280px-Concertgebouw_from_Museumplein_2539.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/South_facade_of_the_Rijksmuseum_Amsterdam_%28DSCF0528%29.jpg/500px-South_facade_of_the_Rijksmuseum_Amsterdam_%28DSCF0528%29.jpg',
+    ],
     intro: 'The canal city is actively turning visitors away — its "Stay Away" campaign targets specific tourist demographics, a global first.',
     issues: [
       { tag: '"Stay Away" Campaign', icon: '🛑', detail: 'A 2023 ad campaign explicitly targeted British men aged 18-35 searching for "stag party Amsterdam," warning of fines and arrests.' },
@@ -91,7 +106,12 @@ const CITIES: City[] = [
     lat: 36.3932,
     lng: 25.4615,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Santorini_-_Grecia_-_Vista_Aerea_del_promontorio_di_Ancient_Thira_-_agosto_2018.jpg/1280px-Santorini_-_Grecia_-_Vista_Aerea_del_promontorio_di_Ancient_Thira_-_agosto_2018.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Skaros_Rock.jpg/1280px-Skaros_Rock.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Santorini_pyrgos_kastellkirche_160707.jpg/1280px-Santorini_pyrgos_kastellkirche_160707.jpg',
+    ],
     intro: 'A volcanic island with 15,000 residents and 3.4 million annual visitors. Every drop of fresh water comes from desalination.',
     issues: [
       { tag: 'Zero Natural Water', icon: '💧', detail: 'Santorini has no freshwater springs; all drinking water is desalinated. Peak-season demand routinely exceeds plant capacity.' },
@@ -107,7 +127,12 @@ const CITIES: City[] = [
     lat: 42.6507,
     lng: 18.0944,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1586500036706-41963de24d8b?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1586500036706-41963de24d8b?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/The_walls_of_the_fortress_and_View_of_the_old_city._panorama.jpg/1280px-The_walls_of_the_fortress_and_View_of_the_old_city._panorama.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Dubrovnik_%2828%29.JPG/1280px-Dubrovnik_%2828%29.JPG',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Rector%27s_palace_20180820.jpg/1280px-Rector%27s_palace_20180820.jpg',
+    ],
     intro: 'Game-of-Thrones tourism nearly cost the Old Town its UNESCO status; daily entry is now capped at 4,000 visitors.',
     issues: [
       { tag: 'Game of Thrones Effect', icon: '🎬', detail: 'Cruise arrivals hit 10,000 per day at the peak of HBO\'s show; UNESCO formally warned the city it could be delisted.' },
@@ -123,7 +148,12 @@ const CITIES: City[] = [
     lat: 64.1466,
     lng: -21.9426,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1531168556467-80aace0d0144?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1531168556467-80aace0d0144?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Reykjav%C3%ADk%2C_view_from_Hallgr%C3%ADmskirkja_%282%29.jpg/1280px-Reykjav%C3%ADk%2C_view_from_Hallgr%C3%ADmskirkja_%282%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/H%C3%B6f%C3%B0i_mvp.jpg/1280px-H%C3%B6f%C3%B0i_mvp.jpg',
+      'https://upload.wikimedia.org/wikipedia/en/thumb/e/ec/Perlan_in_April_2013.jpg/1280px-Perlan_in_April_2013.jpg',
+    ],
     intro: 'Visitor numbers grew 400% in a decade after the 2008 financial crash, putting fragile sub-arctic ecosystems under pressure.',
     issues: [
       { tag: 'Moss Footprint Damage', icon: '🌋', detail: 'A single off-trail footprint on Icelandic moss can take decades to recover. Geyser and lava fields now have boardwalk-only access.' },
@@ -139,7 +169,12 @@ const CITIES: City[] = [
     lat: 48.8566,
     lng: 2.3522,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/1280px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Notre-Dame_de_Paris_2013-07-24.jpg/1280px-Notre-Dame_de_Paris_2013-07-24.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Basilique_du_Sacr%C3%A9-C%C5%93ur_de_Montmartre%2C_Paris_18e_140223_2.jpg/1280px-Basilique_du_Sacr%C3%A9-C%C5%93ur_de_Montmartre%2C_Paris_18e_140223_2.jpg',
+    ],
     intro: '~44 million annual visitors. Post-2024 Olympics, the city is reckoning with a tourism load it now struggles to absorb.',
     issues: [
       { tag: 'Olympics Hangover', icon: '🏟️', detail: 'Post-2024 Games footfall remained 20% above pre-pandemic norms; locals report hostility toward influencer flash-mobs in Montmartre.' },
@@ -155,7 +190,12 @@ const CITIES: City[] = [
     lat: 43.7696,
     lng: 11.2558,
     region: 'Europe',
-    bg: 'https://images.unsplash.com/photo-1543429776-2782fc8e1acd?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1543429776-2782fc8e1acd?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/FirenzeDec092023_01.jpg/1280px-FirenzeDec092023_01.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Palazzo_Pitti_nel_tardo_pomeriggio.jpg/1280px-Palazzo_Pitti_nel_tardo_pomeriggio.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Bas%C3%ADlica_de_la_Santa_Cruz%2C_Florencia%2C_Italia%2C_2022-09-18%2C_DD_95.jpg/1280px-Bas%C3%ADlica_de_la_Santa_Cruz%2C_Florencia%2C_Italia%2C_2022-09-18%2C_DD_95.jpg',
+    ],
     intro: 'The cradle of the Renaissance has Europe\'s densest tourist footprint per square kilometre of historic centre.',
     issues: [
       { tag: '4-Hour Uffizi Queue', icon: '⏰', detail: 'Average queue time at the Uffizi exceeds four hours in peak season — longer than most tour groups\' attention spans.' },
@@ -173,7 +213,12 @@ const CITIES: City[] = [
     lat: 35.0116,
     lng: 135.7681,
     region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Kiyomizu.jpg/1280px-Kiyomizu.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Arashiyama_Bamboo_Grove_%2844050138950%29.jpg/1280px-Arashiyama_Bamboo_Grove_%2844050138950%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Kyoto%2C_Japan_%2849667780482%29.jpg/1280px-Kyoto%2C_Japan_%2849667780482%29.jpg',
+    ],
     intro: 'In 2024 parts of the Gion geisha district were closed to tourists after repeated harassment of maiko apprentices.',
     issues: [
       { tag: 'Geisha Harassment Ban', icon: '📸', detail: 'In April 2024 Gion\'s private alleys were closed to tourists; visitors had been chasing, grabbing and even tearing the kimonos of maiko.' },
@@ -189,7 +234,12 @@ const CITIES: City[] = [
     lat: -8.3405,
     lng: 115.0920,
     region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Bali_panorama.jpg/500px-Bali_panorama.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Bali%27s_Gunung_Agung_seen_at_sunset_from_Gunung_Rinjani.jpg/1280px-Bali%27s_Gunung_Agung_seen_at_sunset_from_Gunung_Rinjani.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Wonderfull_Nusa_Penida.jpg/1280px-Wonderfull_Nusa_Penida.jpg',
+    ],
     intro: 'Tourism consumes ~65% of Bali\'s freshwater. A new tourist tax launched in 2024 to fund cultural and environmental protection.',
     issues: [
       { tag: 'Rice Paddy Drought', icon: '💧', detail: '~65% of the island\'s water now serves hotels and pools; the centuries-old subak irrigation system supporting rice paddies is collapsing.' },
@@ -205,7 +255,12 @@ const CITIES: City[] = [
     lat: 7.8804,
     lng: 98.3923,
     region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Phuket_Aerial.jpg/1280px-Phuket_Aerial.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/%D0%94%D0%BE%D0%BC_%D1%81%D0%B5%D0%BC%D1%8C%D0%B8_%D0%A7%D0%B8%D0%BD%D0%BF%D1%80%D0%B0%D1%87%D0%B0.jpg/500px-%D0%94%D0%BE%D0%BC_%D1%81%D0%B5%D0%BC%D1%8C%D0%B8_%D0%A7%D0%B8%D0%BD%D0%BF%D1%80%D0%B0%D1%87%D0%B0.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Mural_of_King_Rama_9_-_Dibuk_Road%2C_Phuket.jpg/1280px-Mural_of_King_Rama_9_-_Dibuk_Road%2C_Phuket.jpg',
+    ],
     intro: 'Coral cover near the Phi Phi Islands has fallen 80% in 30 years. Maya Bay was closed for four years to recover.',
     issues: [
       { tag: 'Coral Bleaching', icon: '🐠', detail: 'Sunscreen chemicals and boat anchors have driven coral cover near Phi Phi down 80% since 1990; bleaching events now hit annually.' },
@@ -221,7 +276,12 @@ const CITIES: City[] = [
     lat: 11.9674,
     lng: 121.9248,
     region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1573790387438-4da905039392?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Boracay_S2-2020.jpg/500px-Boracay_S2-2020.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Boracay_view_from_Mount_Luho_2012-10-27.jpg/1280px-Boracay_view_from_Mount_Luho_2012-10-27.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Boracay_Cleanup_EMB_DENR_R6.jpg/1280px-Boracay_Cleanup_EMB_DENR_R6.jpg',
+    ],
     intro: 'Closed for six months in 2018 after the President called it a "cesspool"; the rehabilitation became a global case study.',
     issues: [
       { tag: 'Sewage "Cesspool"', icon: '🚽', detail: 'In 2018 President Duterte ordered a six-month full closure after raw sewage was being pumped directly into the sea.' },
@@ -237,7 +297,12 @@ const CITIES: City[] = [
     lat: 13.7563,
     lng: 100.5018,
     region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Bangkok_Montage_2024_2.jpg/1280px-Bangkok_Montage_2024_2.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Chao_Phraya_River_view_from_the_State_Tower%2C_Bangkok_2017.jpg/1280px-Chao_Phraya_River_view_from_the_State_Tower%2C_Bangkok_2017.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/%E0%B8%9A%E0%B8%A3%E0%B8%A3%E0%B8%A2%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%A8%E0%B8%87%E0%B8%B2%E0%B8%99_%E0%B8%AD%E0%B8%B8%E0%B9%88%E0%B8%99%E0%B9%84%E0%B8%AD%E0%B8%A3%E0%B8%B1%E0%B8%81_%E0%B8%84%E0%B8%A5%E0%B8%B2%E0%B8%A2%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%B2%E0%B8%A7_%E0%B8%84%E0%B8%A3%E0%B8%B1%E0%B9%89%E0%B8%87%E0%B8%97%E0%B8%B5%E0%B9%88_2_%2838%29.jpg/1280px-%E0%B8%9A%E0%B8%A3%E0%B8%A3%E0%B8%A2%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%A8%E0%B8%87%E0%B8%B2%E0%B8%99_%E0%B8%AD%E0%B8%B8%E0%B9%88%E0%B8%99%E0%B9%84%E0%B8%AD%E0%B8%A3%E0%B8%B1%E0%B8%81_%E0%B8%84%E0%B8%A5%E0%B8%B2%E0%B8%A2%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%B2%E0%B8%A7_%E0%B8%84%E0%B8%A3%E0%B8%B1%E0%B9%89%E0%B8%87%E0%B8%97%E0%B8%B5%E0%B9%88_2_%2838%29.jpg',
+    ],
     intro: 'The world\'s most-visited city for several years running. Air pollution and river-front gentrification are the central battles.',
     issues: [
       { tag: 'PM2.5 Crisis', icon: '💨', detail: 'Khao San Road and the Old City routinely exceed WHO PM2.5 limits; in early 2024 schools closed citywide due to haze.' },
@@ -253,7 +318,12 @@ const CITIES: City[] = [
     lat: 13.3633,
     lng: 103.8564,
     region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Front_porch_of_Wat_Damnak.jpg/1280px-Front_porch_of_Wat_Damnak.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Siem_Reap_River%2C_Siem_Reap.jpg/1280px-Siem_Reap_River%2C_Siem_Reap.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Siem_Reap_Pub_Street_02.jpg/1280px-Siem_Reap_Pub_Street_02.jpg',
+    ],
     intro: 'Hotel groundwater extraction is destabilising the foundations of the 12th-century Angkor temple complex.',
     issues: [
       { tag: 'Angkor Foundation Sinking', icon: '🏛️', detail: 'Hotels pumping groundwater for swimming pools and laundry have lowered the water table; archaeologists fear foundation subsidence.' },
@@ -269,7 +339,12 @@ const CITIES: City[] = [
     lat: 37.5665,
     lng: 126.9780,
     region: 'Asia',
-    bg: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Seoul_%28175734251%29_%28cropped%29.jpg/1280px-Seoul_%28175734251%29_%28cropped%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/%EC%A4%91%ED%99%94%EC%A0%84%EC%9D%98_%EB%82%AE.jpg/500px-%EC%A4%91%ED%99%94%EC%A0%84%EC%9D%98_%EB%82%AE.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Lotte_World_day_view_2.jpg/1280px-Lotte_World_day_view_2.jpg',
+    ],
     intro: 'K-pop and K-drama tourism transformed traditional neighbourhoods. In 2024 Bukchon Hanok Village imposed quiet hours after years of resident protest.',
     issues: [
       { tag: 'Bukchon Quiet Ordinance', icon: '🤫', detail: 'After eight years of resident campaigning, a 5pm-10am quiet zone now applies to Bukchon Hanok Village; fines start at 100,000 KRW.' },
@@ -287,7 +362,12 @@ const CITIES: City[] = [
     lat: 40.7128,
     lng: -74.0060,
     region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/View_of_Empire_State_Building_from_Rockefeller_Center_New_York_City_dllu_%28cropped%29.jpg/1280px-View_of_Empire_State_Building_from_Rockefeller_Center_New_York_City_dllu_%28cropped%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Statue-of-Liberty-New-York-2014.jpg/1280px-Statue-of-Liberty-New-York-2014.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/New_york_times_square-terabass_%28cropped%29.jpg/1280px-New_york_times_square-terabass_%28cropped%29.jpg',
+    ],
     intro: 'Times Square attracts 360,000 daily visitors. In 2023 the city effectively banned Airbnb-style short-term rentals citywide.',
     issues: [
       { tag: 'Local Law 18', icon: '🏠', detail: 'Effective Sept 2023, Local Law 18 effectively banned short-term rentals under 30 days; Airbnb listings dropped ~80% overnight.' },
@@ -303,7 +383,12 @@ const CITIES: City[] = [
     lat: -13.1631,
     lng: -72.5450,
     region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Machu_Picchu%2C_2023_%28012%29.jpg/1280px-Machu_Picchu%2C_2023_%28012%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Machu_Picchu%2C_Per%C3%BA%2C_2015-07-30%2C_DD_47.JPG/1280px-Machu_Picchu%2C_Per%C3%BA%2C_2015-07-30%2C_DD_47.JPG',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Andenes_at_Machu_Picchu_%28cropped%29.jpg/1280px-Andenes_at_Machu_Picchu_%28cropped%29.jpg',
+    ],
     intro: 'In 2024 the daily visitor cap was tightened from 5,600 to 4,500 after archaeologists warned of irreversible step erosion.',
     issues: [
       { tag: 'Stone Step Cracks', icon: '🪜', detail: 'Inca-era steps show visible cracking and rounding under millions of footfalls; some sections have been re-routed onto wooden boardwalks.' },
@@ -319,7 +404,12 @@ const CITIES: City[] = [
     lat: -13.5320,
     lng: -71.9675,
     region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1531968455001-5c5272a41129?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1531968455001-5c5272a41129?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Iglesia_de_la_Compa%C3%B1%C3%ADa_de_Jes%C3%BAs%2C_Plaza_de_Armas%2C_Cusco%2C_Per%C3%BA%2C_2015-07-31%2C_DD_74.JPG/1280px-Iglesia_de_la_Compa%C3%B1%C3%ADa_de_Jes%C3%BAs%2C_Plaza_de_Armas%2C_Cusco%2C_Per%C3%BA%2C_2015-07-31%2C_DD_74.JPG',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Vista_Calle_Suecia.jpg/1280px-Vista_Calle_Suecia.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/UNESCOCuscomarker_and_Coricancha_%28cropped%29.jpg/330px-UNESCOCuscomarker_and_Coricancha_%28cropped%29.jpg',
+    ],
     intro: 'The former Inca capital sits at 3,400 m. Rapid arrivals from sea level routinely cause altitude-sickness incidents requiring oxygen.',
     issues: [
       { tag: 'Altitude Health Crisis', icon: '⛰️', detail: 'Tourists flying directly from Lima to Cusco frequently experience acute mountain sickness; emergency oxygen is now a hotel-room standard.' },
@@ -335,7 +425,12 @@ const CITIES: City[] = [
     lat: -22.9068,
     lng: -43.1729,
     region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Cidade_Maravilhosa.jpg/1280px-Cidade_Maravilhosa.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/P%C3%A3o_de_A%C3%A7ucar_Rio_de_Janeiro_Brazil_-_panoramio_-_Hiroki_Ogawa_%28cropped%29.jpg/1280px-P%C3%A3o_de_A%C3%A7ucar_Rio_de_Janeiro_Brazil_-_panoramio_-_Hiroki_Ogawa_%28cropped%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/At_Rio_de_Janeiro_2019_200_%28cropped%29.jpg/1280px-At_Rio_de_Janeiro_2019_200_%28cropped%29.jpg',
+    ],
     intro: 'Carnival capital of the Americas — but "favela tours" raise sharp ethical debates about tourism that frames poverty as spectacle.',
     issues: [
       { tag: 'Favela Tour Ethics', icon: '🏘️', detail: 'Bus tours through Rocinha and other favelas photograph residents without consent; a growing local movement calls it "poverty tourism."' },
@@ -351,7 +446,12 @@ const CITIES: City[] = [
     lat: 21.1619,
     lng: -86.8515,
     region: 'Americas',
-    bg: 'https://images.unsplash.com/photo-1552074284-5e88ef1aef18?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1552074284-5e88ef1aef18?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Cancun_Strand_Luftbild_%2822143397586%29.jpg/1280px-Cancun_Strand_Luftbild_%2822143397586%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Boulevard_Kukulcan%2C_Zona_Hotelera%2C_Canc%C3%BAn%2C_Mexico_-_panoramio_%2834%29.jpg/1280px-Boulevard_Kukulcan%2C_Zona_Hotelera%2C_Canc%C3%BAn%2C_Mexico_-_panoramio_%2834%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Museo_Maya_de_Cancun.jpg/500px-Museo_Maya_de_Cancun.jpg',
+    ],
     intro: 'Resort construction has destroyed ~60% of the Riviera Maya\'s mangrove ecosystem, the original protection against hurricanes.',
     issues: [
       { tag: '60% Mangrove Loss', icon: '🌴', detail: 'Hotel-zone construction has cleared an estimated 60% of original mangrove cover, eliminating a key buffer against hurricanes.' },
@@ -369,7 +469,12 @@ const CITIES: City[] = [
     lat: 30.0444,
     lng: 31.2357,
     region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Cairo_Opera_House%2C_Al_Hurriyah_Park_and_the_Nile_river_%2814797782354%29.jpg/1280px-Cairo_Opera_House%2C_Al_Hurriyah_Park_and_the_Nile_river_%2814797782354%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Cairo_%22Egyptian_Museum%22_-_panoramio.jpg/500px-Cairo_%22Egyptian_Museum%22_-_panoramio.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/The_Cairo_Tower.jpg/1280px-The_Cairo_Tower.jpg',
+    ],
     intro: 'The Grand Egyptian Museum opened in 2024, dramatically shifting visitor flows toward an already overloaded Giza Plateau.',
     issues: [
       { tag: 'Limestone Weathering', icon: '🏜️', detail: 'Air pollution and crowd-generated humidity are weathering Giza pyramid limestone at roughly ten times the natural rate.' },
@@ -385,7 +490,12 @@ const CITIES: City[] = [
     lat: -33.9249,
     lng: 18.4241,
     region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Cape_Town_%28ZA%29%2C_Table_Mountain%2C_Blick_auf_City_Bowl_--_2024_--_2855.jpg/1280px-Cape_Town_%28ZA%29%2C_Table_Mountain%2C_Blick_auf_City_Bowl_--_2024_--_2855.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Camps_bay_%2853460319478%29_%28cropped%29.jpg/1280px-Camps_bay_%2853460319478%29_%28cropped%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Signal_Hill_and_Ferris_wheel_from_Victoria_Wharf_balcony%2C_Cape_Town.jpg/1280px-Signal_Hill_and_Ferris_wheel_from_Victoria_Wharf_balcony%2C_Cape_Town.jpg',
+    ],
     intro: 'In 2018 Cape Town came within 90 days of being the first major city in the world to run out of tap water.',
     issues: [
       { tag: 'Day Zero Threat', icon: '💧', detail: 'In 2018 reservoir levels fell to 13.5%; "Day Zero" — the date municipal taps would shut off — was 90 days away before rains came.' },
@@ -401,7 +511,12 @@ const CITIES: City[] = [
     lat: -33.8688,
     lng: 151.2093,
     region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Sydney_Opera_House_and_Harbour_Bridge_Dusk_%282%29_2019-06-21.jpg/1280px-Sydney_Opera_House_and_Harbour_Bridge_Dusk_%282%29_2019-06-21.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Sydney_%28AU%29%2C_Queen_Victoria_Building_--_2019_--_3580_%28cropped%29_-_2.jpg/1280px-Sydney_%28AU%29%2C_Queen_Victoria_Building_--_2019_--_3580_%28cropped%29_-_2.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/University_of_Sydney%27s_Main_Quadrangle.jpg/1280px-University_of_Sydney%27s_Main_Quadrangle.jpg',
+    ],
     intro: 'Iconic harbour, second-highest house prices in the world. Bondi Beach is the global flashpoint for "Instagram tourism."',
     issues: [
       { tag: 'Bondi Instagram Effect', icon: '📱', detail: 'Bondi Beach is a global influencer location; the local surf-culture community largely no longer uses it on weekends.' },
@@ -417,7 +532,12 @@ const CITIES: City[] = [
     lat: -0.9538,
     lng: -90.9656,
     region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1517483000871-1dbf64a6e1c6?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1517483000871-1dbf64a6e1c6?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Lobo_marino_%28Zalophus_californianus_wollebaeki%29%2C_Punta_Pitt%2C_isla_de_San_Crist%C3%B3bal%2C_islas_Gal%C3%A1pagos%2C_Ecuador%2C_2015-07-24%2C_DD_11.JPG/1280px-Lobo_marino_%28Zalophus_californianus_wollebaeki%29%2C_Punta_Pitt%2C_isla_de_San_Crist%C3%B3bal%2C_islas_Gal%C3%A1pagos%2C_Ecuador%2C_2015-07-24%2C_DD_11.JPG',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Alvaro_Sevilla_Design_Isla_Santa_Cruz_Galapagos_foto_tomada_desde_el_avi%C3%B3n.jpg/1280px-Alvaro_Sevilla_Design_Isla_Santa_Cruz_Galapagos_foto_tomada_desde_el_avi%C3%B3n.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Floreana1.jpg/1280px-Floreana1.jpg',
+    ],
     intro: 'Darwin\'s living laboratory. More than 60 endemic species are threatened by tourist-introduced invasive species.',
     issues: [
       { tag: 'Invasive Species', icon: '🐢', detail: 'Tourist boats and cargo flights have introduced rats, ants and plants threatening 60+ endemic species, including giant tortoises.' },
@@ -433,7 +553,12 @@ const CITIES: City[] = [
     lat: -36.8485,
     lng: 174.7633,
     region: 'Other',
-    bg: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600&q=80&auto=format&fit=crop',
+    bg: [
+      'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600&q=80&auto=format&fit=crop',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Auckland_skyline_-_May_2024_%282%29.jpg/1280px-Auckland_skyline_-_May_2024_%282%29.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/00_0399_Auckland_City_Hall%2C_New_Zealand.jpg/1280px-00_0399_Auckland_City_Hall%2C_New_Zealand.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cathedral_of_Saint_Patrick_and_Saint_Joseph_%28cropped%29.jpg/1280px-Cathedral_of_Saint_Patrick_and_Saint_Joseph_%28cropped%29.jpg',
+    ],
     intro: 'Gateway to Aotearoa. Cruise-ship congestion and the commodification of Māori culture are central debates.',
     issues: [
       { tag: 'Haka Commercialisation', icon: '🌿', detail: 'Sacred Māori haka ceremonies are being reduced to airport welcome shows; iwi (tribal) groups are pushing for cultural-IP protections.' },
@@ -1418,18 +1543,86 @@ function StudentBoard({ city, onClose }: { city: City; onClose: () => void }) {
 }
 
 // ============ City Dashboard ============
+const BG_INTERVAL_MS = 30_000;
+const BG_FADE_MS = 2000;
+const KENBURNS_VARIANTS = ['kenburns-a', 'kenburns-b', 'kenburns-c', 'kenburns-d'] as const;
+
 function CityDashboard({ city, onBack }: { city: City; onBack: () => void }) {
   const [expandedIssue, setExpandedIssue] = useState<number | null>(null);
   const [showBoard, setShowBoard] = useState(false);
+  const [bgIndex, setBgIndex] = useState(0);
+  const [cycle, setCycle] = useState(0);
+
+  // Reset carousel when city changes
+  useEffect(() => {
+    setBgIndex(0);
+    setCycle(0);
+  }, [city.id]);
+
+  // Auto-advance every BG_INTERVAL_MS; resets whenever bgIndex changes (manual or auto)
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setBgIndex((i) => (i + 1) % city.bg.length);
+      setCycle((c) => c + 1);
+    }, BG_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [city.id, bgIndex, city.bg.length]);
+
+  const goTo = (i: number) => {
+    setBgIndex(((i % city.bg.length) + city.bg.length) % city.bg.length);
+    setCycle((c) => c + 1);
+  };
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* Background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${city.bg})` }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70" />
+      {/* Background carousel — three layered images cross-fade with a slow Ken Burns zoom */}
+      {city.bg.map((url, i) => (
+        <div
+          key={`${city.id}-${i}-${cycle}`}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${url})`,
+            opacity: i === bgIndex ? 1 : 0,
+            transition: `opacity ${BG_FADE_MS}ms ease-out`,
+            animation:
+              i === bgIndex
+                ? `${KENBURNS_VARIANTS[i % KENBURNS_VARIANTS.length]} ${BG_INTERVAL_MS + BG_FADE_MS}ms ease-out forwards`
+                : 'none',
+            willChange: 'opacity, transform',
+          }}
+        />
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70 pointer-events-none" />
+
+      {/* Manual prev/next */}
+      <button
+        onClick={() => goTo(bgIndex - 1)}
+        aria-label="Previous background"
+        className="absolute z-20 left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md text-white opacity-50 hover:opacity-100 transition"
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+      <button
+        onClick={() => goTo(bgIndex + 1)}
+        aria-label="Next background"
+        className="absolute z-20 right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md text-white opacity-50 hover:opacity-100 transition"
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
+
+      {/* Dot indicators */}
+      <div className="absolute z-20 bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        {city.bg.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Background ${i + 1}`}
+            className={`h-2 rounded-full transition-all ${
+              i === bgIndex ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+            }`}
+          />
+        ))}
+      </div>
 
       {/* Top bar */}
       <div className="relative z-10 flex items-center justify-between px-6 py-4">

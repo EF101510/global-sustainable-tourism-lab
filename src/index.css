@@ -10,3 +10,22 @@ body,
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC',
     'PingFang TC', 'Microsoft JhengHei', sans-serif;
 }
+
+/* macOS-style Ken Burns: slow zoom + subtle pan, three direction variants
+   so successive images feel organic rather than mechanical. */
+@keyframes kenburns-a {
+  from { transform: scale(1) translate(0, 0); }
+  to   { transform: scale(1.12) translate(-1.5%, -1%); }
+}
+@keyframes kenburns-b {
+  from { transform: scale(1.04) translate(-1%, 1%); }
+  to   { transform: scale(1.14) translate(1.5%, -1%); }
+}
+@keyframes kenburns-c {
+  from { transform: scale(1.02) translate(1%, -0.5%); }
+  to   { transform: scale(1.13) translate(-1%, 1.5%); }
+}
+@keyframes kenburns-d {
+  from { transform: scale(1) translate(0.5%, 0.5%); }
+  to   { transform: scale(1.12) translate(-0.5%, -1.2%); }
+}
