@@ -11,3 +11,15 @@ dist-ssr
 .DS_Store
 *.log
 .vite
+
+# TypeScript composite-build artifacts (must NOT be committed — they leak
+# build paths and break for collaborators on different machines).
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js
+src/server/*.d.ts
+src/server/*.js
+
+# Wrangler local dev cache + secrets-as-files
+.wrangler/
+.dev.vars
