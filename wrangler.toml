@@ -1,0 +1,32 @@
+# Cloudflare Pages config. Mainly used for `wrangler pages dev` and to
+# declare bindings (KV / D1 / R2) in version control. The Pages dashboard
+# UI mirrors these settings; either source works.
+#
+# Deployment summary:
+#   1. `npm install -g wrangler` (one-time)
+#   2. `wrangler login`
+#   3. `wrangler pages project create global-tourism-lab`  (one-time)
+#   4. `npm run build`
+#   5. `wrangler pages deploy dist`
+#   OR connect this repo via the Pages dashboard for git-push deploys.
+#
+# Setting secrets (for production):
+#   wrangler pages secret put ANTHROPIC_API_KEY --project-name=global-tourism-lab
+#   wrangler pages secret put ANTHROPIC_MODEL   --project-name=global-tourism-lab
+#   wrangler pages secret put ANTHROPIC_EFFORT  --project-name=global-tourism-lab
+#
+# Local Pages-runtime testing (optional — Vite dev middleware is faster
+# for iterating; only use this when you specifically want to exercise the
+# Workers runtime or KV bindings):
+#   npm run build && wrangler pages dev dist
+
+name = "global-tourism-lab"
+compatibility_date = "2026-04-01"
+pages_build_output_dir = "dist"
+
+# KV namespace for the future shared Student Board. Create the namespace
+# once with: `wrangler kv namespace create BOARD`, then paste the returned
+# id below and uncomment.
+# [[kv_namespaces]]
+# binding = "BOARD"
+# id = "<paste-the-id-here>"

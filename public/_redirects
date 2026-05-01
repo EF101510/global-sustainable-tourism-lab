@@ -1,0 +1,4 @@
+# Cloudflare Pages SPA fallback. `/api/*` is matched first by Pages
+# Functions in `functions/`, so this rule only catches non-function routes
+# like `/city/venice` and rewrites them to the SPA shell.
+/*  /index.html  200
