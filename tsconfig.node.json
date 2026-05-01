@@ -5,7 +5,10 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "strict": true
+    "esModuleInterop": true,
+    "strict": true,
+    "outDir": "./node_modules/.cache/tsbuildinfo",
+    "types": ["node"]
   },
-  "include": ["vite.config.ts", "src/server/**/*.ts"]
+  "include": ["vite.config.ts", "src/server/**/*.ts", "api/**/*.ts"]
 }

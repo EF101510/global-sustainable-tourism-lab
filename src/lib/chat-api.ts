@@ -1,5 +1,23 @@
 import type { City, ChatMessage } from '../types';
 
+/**
+ * Read the proxy's error body if the response wasn't OK and surface a
+ * useful message to the caller. The proxy returns `{error: string}` on
+ * failure (both for missing-key 500s and for forwarded Anthropic errors
+ * like 401/429/insufficient-credit), so this gives users an actionable
+ * hint instead of a generic "proxy not running".
+ */
+async function throwFromResponse(response: Response): Promise<never> {
+  let detail = '';
+  try {
+    const body = await response.json();
+    detail = typeof body?.error === 'string' ? body.error : JSON.stringify(body);
+  } catch {
+    detail = await response.text().catch(() => '');
+  }
+  throw new Error(`HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
+}
+
 function buildSystemPrompt(city: City): string {
   return `You are the AI sustainable-tourism advisor for the "Global Sustainable Tourism AI Lab," helping students analyze global tourism sustainability issues in English.
 
@@ -36,7 +54,7 @@ export async function sendChatMessage(
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
     }),
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (!response.ok) await throwFromResponse(response);
   const data = await response.json();
   return (
     data.content?.find((c: { type: string }) => c.type === 'text')?.text ||
@@ -88,7 +106,7 @@ Return JSON only.`;
       messages: [{ role: 'user', content: userPrompt }],
     }),
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (!response.ok) await throwFromResponse(response);
   const data = await response.json();
   const text: string =
     data.content?.find((c: { type: string }) => c.type === 'text')?.text ||

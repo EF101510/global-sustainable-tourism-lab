@@ -3,9 +3,6 @@ import { Send, Sparkles } from 'lucide-react';
 import type { ChatMessage, City } from '../types';
 import { sendChatMessage } from '../lib/chat-api';
 
-const PROXY_DOWN_MESSAGE =
-  '⚠️ The /api/chat backend proxy is not running yet. Please set up the proxy endpoint (connecting to the Anthropic API) and try again.';
-
 export default function AIChat({ city }: { city: City }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -40,10 +37,11 @@ export default function AIChat({ city }: { city: City }) {
     try {
       const reply = await sendChatMessage(city, newMessages);
       setMessages([...newMessages, { role: 'assistant', content: reply }]);
-    } catch {
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
       setMessages([
         ...newMessages,
-        { role: 'assistant', content: PROXY_DOWN_MESSAGE },
+        { role: 'assistant', content: `⚠️ ${detail}` },
       ]);
     } finally {
       setLoading(false);

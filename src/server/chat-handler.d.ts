@@ -1,41 +1,45 @@
 import Anthropic from '@anthropic-ai/sdk';
-/**
- * Shape the front-end posts to /api/chat. `system` is the per-city advisor
- * prompt assembled in `lib/chat-api.ts`; `messages` is the running multi-turn
- * conversation.
- */
 export interface ChatRequestBody {
     system: string;
     messages: Anthropic.MessageParam[];
 }
+export type EffortLevel = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 export interface ChatHandlerOptions {
     apiKey: string;
+    /** Anthropic model id. Defaults to `claude-opus-4-7`. */
     model?: string;
+    /** Reasoning effort. Pass `undefined` to omit (required for Haiku 4.5,
+     *  which doesn't support the effort parameter). */
+    effort?: EffortLevel;
 }
+export declare function isValidEffort(value: string): value is EffortLevel;
 /**
  * Forwards the request to Anthropic and returns the SDK response unchanged.
  *
- * Design notes (kept here so we don't have to re-derive when tuning):
- * - **Model**: `claude-opus-4-7` — the lab's questions are open-ended and
- *   benefit from the most capable model. Override via `options.model` if
- *   cost becomes a concern.
- * - **Adaptive thinking**: `{type: "adaptive"}` lets Claude decide depth per
- *   request. The chat panel asks for ~200-word answers; the carrying-capacity
- *   estimator asks for a small JSON object. Both work cleanly with adaptive.
- *   `display: "summarized"` is intentionally *not* set — the front-end only
- *   reads `text` blocks, and Opus 4.7's default omits thinking text anyway,
- *   so leaving it omitted saves output tokens.
- * - **Effort**: `medium` — sweet spot for short educational answers; raise to
- *   `high` if response quality regresses on harder questions.
- * - **Prompt caching**: the system prompt is repeated turn-after-turn during
- *   a single chat conversation. A `cache_control: {type: "ephemeral"}` on
- *   the system block lets that prefix hit the cache on every follow-up turn.
- *   Below the model's minimum prefix length the marker is silently ignored
- *   (no error), so it's harmless when the prompt is short.
- * - **No streaming**: the front-end uses a single `fetch().json()` call, so
- *   we return the full response. `max_tokens: 16000` keeps generation under
- *   the SDK's HTTP timeout window for non-streamed requests.
+ * Configurable via env vars (resolved by the caller — Vite middleware /
+ * Vercel function — and passed in here):
+ * - **model** (`ANTHROPIC_MODEL`) — see `.env.example` for choices.
+ * - **effort** (`ANTHROPIC_EFFORT`) — `low|medium|high|xhigh|max` or empty.
+ *
+ * Adaptive thinking and the effort parameter are auto-disabled when the
+ * configured model doesn't support them (e.g. Haiku 4.5), so swapping to a
+ * cheaper model just works without any other code change.
+ *
+ * The system prompt gets `cache_control: ephemeral` so multi-turn chats
+ * hit the prompt cache for every follow-up turn (~10% input cost on hits).
+ * Below the model's minimum cacheable prefix the marker is silently
+ * ignored — harmless when the prompt is short.
  */
-export declare function handleChat(body: ChatRequestBody, { apiKey, model }: ChatHandlerOptions): Promise<Anthropic.Message>;
+export declare function handleChat(body: ChatRequestBody, { apiKey, model, effort }: ChatHandlerOptions): Promise<Anthropic.Message>;
 /** Map an Anthropic SDK error to an HTTP status the proxy should return. */
 export declare function statusFromError(err: unknown): number;
+/**
+ * Read ANTHROPIC_MODEL and ANTHROPIC_EFFORT from a generic env source
+ * (works for Node `process.env` and Vite's `loadEnv` result alike).
+ * Throws if effort is set to an invalid value, so a typo in `.env.local`
+ * surfaces at startup instead of as a 400 from Anthropic.
+ */
+export declare function readChatConfig(env: Record<string, string | undefined>): {
+    model?: string;
+    effort?: EffortLevel;
+};

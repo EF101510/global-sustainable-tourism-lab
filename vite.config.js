@@ -39,56 +39,56 @@ import react from '@vitejs/plugin-react';
 /**
  * Dev-only middleware that handles `POST /api/chat` by calling the same
  * shared handler that the production Vercel function uses. Loads the API
- * key from `.env` / `.env.local` via Vite's `loadEnv`. In production the
- * `api/chat.ts` serverless function takes over instead.
+ * key + model + effort from `.env` / `.env.local` via Vite's `loadEnv`.
+ * In production the `api/chat.ts` serverless function takes over instead.
  */
-function apiChatDevMiddleware(apiKey) {
+function apiChatDevMiddleware(config) {
     return {
         name: 'api-chat-dev',
         configureServer: function (server) {
             var _this = this;
             server.middlewares.use('/api/chat', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-                var body, _a, _b, _c, _d, handleChat, statusFromError, result, e_1, statusFromError;
-                return __generator(this, function (_e) {
-                    switch (_e.label) {
+                var body, _a, _b, _c, handleChat, result, e_1, statusFromError;
+                return __generator(this, function (_d) {
+                    switch (_d.label) {
                         case 0:
                             if (req.method !== 'POST') {
                                 send(res, 405, { error: 'Method Not Allowed' });
                                 return [2 /*return*/];
                             }
-                            if (!apiKey) {
+                            if (!config.apiKey) {
                                 send(res, 500, {
                                     error: 'ANTHROPIC_API_KEY is not set. Add it to .env.local in the project root.',
                                 });
                                 return [2 /*return*/];
                             }
-                            _e.label = 1;
+                            _d.label = 1;
                         case 1:
-                            _e.trys.push([1, 3, , 4]);
+                            _d.trys.push([1, 3, , 4]);
                             _b = (_a = JSON).parse;
                             return [4 /*yield*/, readBody(req)];
                         case 2:
-                            body = _b.apply(_a, [_e.sent()]);
+                            body = _b.apply(_a, [_d.sent()]);
                             return [3 /*break*/, 4];
                         case 3:
-                            _c = _e.sent();
+                            _c = _d.sent();
                             send(res, 400, { error: 'Invalid JSON body' });
                             return [2 /*return*/];
                         case 4:
-                            _e.trys.push([4, 7, , 9]);
+                            _d.trys.push([4, 7, , 9]);
                             return [4 /*yield*/, import('./src/server/chat-handler')];
                         case 5:
-                            _d = _e.sent(), handleChat = _d.handleChat, statusFromError = _d.statusFromError;
-                            return [4 /*yield*/, handleChat(body, { apiKey: apiKey })];
+                            handleChat = (_d.sent()).handleChat;
+                            return [4 /*yield*/, handleChat(body, { apiKey: config.apiKey, model: config.model, effort: config.effort })];
                         case 6:
-                            result = _e.sent();
+                            result = _d.sent();
                             send(res, 200, result);
                             return [3 /*break*/, 9];
                         case 7:
-                            e_1 = _e.sent();
+                            e_1 = _d.sent();
                             return [4 /*yield*/, import('./src/server/chat-handler')];
                         case 8:
-                            statusFromError = (_e.sent()).statusFromError;
+                            statusFromError = (_d.sent()).statusFromError;
                             send(res, statusFromError(e_1), {
                                 error: e_1 instanceof Error ? e_1.message : String(e_1),
                             });
@@ -113,18 +113,28 @@ function send(res, status, body) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(body));
 }
-export default defineConfig(function (_a) {
-    var mode = _a.mode;
-    // Pass `''` as prefix to load every variable, not just `VITE_*` — we need
-    // the server-only `ANTHROPIC_API_KEY`. It's never inlined into the client
-    // bundle because we don't reference `import.meta.env.ANTHROPIC_API_KEY`.
-    var env = loadEnv(mode, process.cwd(), '');
-    var apiKey = env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
-    return {
-        plugins: [react(), apiChatDevMiddleware(apiKey)],
-        server: {
-            port: 5173,
-            open: true,
-        },
-    };
-});
+export default defineConfig(function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
+    var env, apiKey, readChatConfig, _c, model, effort;
+    var mode = _b.mode;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
+            case 0:
+                env = loadEnv(mode, process.cwd(), '');
+                apiKey = env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+                return [4 /*yield*/, import('./src/server/chat-handler')];
+            case 1:
+                readChatConfig = (_d.sent()).readChatConfig;
+                _c = readChatConfig({
+                    ANTHROPIC_MODEL: env.ANTHROPIC_MODEL,
+                    ANTHROPIC_EFFORT: env.ANTHROPIC_EFFORT,
+                }), model = _c.model, effort = _c.effort;
+                return [2 /*return*/, {
+                        plugins: [react(), apiChatDevMiddleware({ apiKey: apiKey, model: model, effort: effort })],
+                        server: {
+                            port: 5173,
+                            open: true,
+                        },
+                    }];
+        }
+    });
+}); });

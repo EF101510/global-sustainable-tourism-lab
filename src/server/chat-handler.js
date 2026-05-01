@@ -1,3 +1,14 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,50 +46,53 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import Anthropic from '@anthropic-ai/sdk';
+var VALID_EFFORTS = [
+    'low',
+    'medium',
+    'high',
+    'xhigh',
+    'max',
+];
+export function isValidEffort(value) {
+    return VALID_EFFORTS.includes(value);
+}
+/** Models that support adaptive thinking + the effort parameter. */
+function supportsThinkingAndEffort(model) {
+    // Haiku 4.5 returns 400 for both `thinking` and `output_config.effort`.
+    // Conservative heuristic: only enable for Opus and Sonnet 4.6+ family.
+    return /(?:opus-4|sonnet-4-)/.test(model);
+}
 /**
  * Forwards the request to Anthropic and returns the SDK response unchanged.
  *
- * Design notes (kept here so we don't have to re-derive when tuning):
- * - **Model**: `claude-opus-4-7` — the lab's questions are open-ended and
- *   benefit from the most capable model. Override via `options.model` if
- *   cost becomes a concern.
- * - **Adaptive thinking**: `{type: "adaptive"}` lets Claude decide depth per
- *   request. The chat panel asks for ~200-word answers; the carrying-capacity
- *   estimator asks for a small JSON object. Both work cleanly with adaptive.
- *   `display: "summarized"` is intentionally *not* set — the front-end only
- *   reads `text` blocks, and Opus 4.7's default omits thinking text anyway,
- *   so leaving it omitted saves output tokens.
- * - **Effort**: `medium` — sweet spot for short educational answers; raise to
- *   `high` if response quality regresses on harder questions.
- * - **Prompt caching**: the system prompt is repeated turn-after-turn during
- *   a single chat conversation. A `cache_control: {type: "ephemeral"}` on
- *   the system block lets that prefix hit the cache on every follow-up turn.
- *   Below the model's minimum prefix length the marker is silently ignored
- *   (no error), so it's harmless when the prompt is short.
- * - **No streaming**: the front-end uses a single `fetch().json()` call, so
- *   we return the full response. `max_tokens: 16000` keeps generation under
- *   the SDK's HTTP timeout window for non-streamed requests.
+ * Configurable via env vars (resolved by the caller — Vite middleware /
+ * Vercel function — and passed in here):
+ * - **model** (`ANTHROPIC_MODEL`) — see `.env.example` for choices.
+ * - **effort** (`ANTHROPIC_EFFORT`) — `low|medium|high|xhigh|max` or empty.
+ *
+ * Adaptive thinking and the effort parameter are auto-disabled when the
+ * configured model doesn't support them (e.g. Haiku 4.5), so swapping to a
+ * cheaper model just works without any other code change.
+ *
+ * The system prompt gets `cache_control: ephemeral` so multi-turn chats
+ * hit the prompt cache for every follow-up turn (~10% input cost on hits).
+ * Below the model's minimum cacheable prefix the marker is silently
+ * ignored — harmless when the prompt is short.
  */
 export function handleChat(body_1, _a) {
     return __awaiter(this, arguments, void 0, function (body, _b) {
-        var client;
-        var apiKey = _b.apiKey, _c = _b.model, model = _c === void 0 ? 'claude-opus-4-7' : _c;
+        var client, canThink;
+        var apiKey = _b.apiKey, _c = _b.model, model = _c === void 0 ? 'claude-opus-4-7' : _c, effort = _b.effort;
         return __generator(this, function (_d) {
             client = new Anthropic({ apiKey: apiKey });
-            return [2 /*return*/, client.messages.create({
-                    model: model,
-                    max_tokens: 16000,
-                    thinking: { type: 'adaptive' },
-                    output_config: { effort: 'medium' },
-                    system: [
+            canThink = supportsThinkingAndEffort(model);
+            return [2 /*return*/, client.messages.create(__assign(__assign({ model: model, max_tokens: 16000, system: [
                         {
                             type: 'text',
                             text: body.system,
                             cache_control: { type: 'ephemeral' },
                         },
-                    ],
-                    messages: body.messages,
-                })];
+                    ], messages: body.messages }, (canThink ? { thinking: { type: 'adaptive' } } : {})), (canThink && effort ? { output_config: { effort: effort } } : {})))];
         });
     });
 }
@@ -88,4 +102,19 @@ export function statusFromError(err) {
     if (err instanceof Anthropic.APIError)
         return (_a = err.status) !== null && _a !== void 0 ? _a : 500;
     return 500;
+}
+/**
+ * Read ANTHROPIC_MODEL and ANTHROPIC_EFFORT from a generic env source
+ * (works for Node `process.env` and Vite's `loadEnv` result alike).
+ * Throws if effort is set to an invalid value, so a typo in `.env.local`
+ * surfaces at startup instead of as a 400 from Anthropic.
+ */
+export function readChatConfig(env) {
+    var _a, _b;
+    var model = ((_a = env.ANTHROPIC_MODEL) === null || _a === void 0 ? void 0 : _a.trim()) || undefined;
+    var rawEffort = ((_b = env.ANTHROPIC_EFFORT) === null || _b === void 0 ? void 0 : _b.trim()) || '';
+    if (rawEffort && !isValidEffort(rawEffort)) {
+        throw new Error("Invalid ANTHROPIC_EFFORT=\"".concat(rawEffort, "\". Must be one of: ").concat(VALID_EFFORTS.join(', '), ", or empty."));
+    }
+    return { model: model, effort: rawEffort ? rawEffort : undefined };
 }

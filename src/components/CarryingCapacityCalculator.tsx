@@ -90,10 +90,9 @@ export default function CarryingCapacityCalculator({
       setSpacePerPerson(est.spacePerPerson);
       setStayTime(est.stayTime);
       setActual(est.actualVisitors);
-    } catch {
-      setEstimateError(
-        '⚠️ AI proxy unavailable. Set up /api/chat on the backend to enable live estimates.'
-      );
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      setEstimateError(`⚠️ ${detail}`);
     } finally {
       setEstimating(false);
     }
