@@ -14,6 +14,7 @@ import {
  *   POST /api/board/:city          → body { nickname, studentClass, content }
  *                                    → { post, editToken }
  *   PATCH /api/board/:city/:postId → handled in ./[postId].ts
+ *   DELETE /api/board/:city/:postId → handled in ./[postId].ts
  *
  * Storage: Workers KV under key `board:${cityId}`. Free tier (100 K
  * reads/day, 1 K writes/day) easily covers a class. Eventual
