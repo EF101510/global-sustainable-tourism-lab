@@ -44,3 +44,70 @@ export async function sendChatMessage(
     'Sorry, I cannot respond right now. Please try again later.'
   );
 }
+
+export interface CarryingCapacityEstimate {
+  area: number;
+  spacePerPerson: number;
+  stayTime: number;
+  actualVisitors: number;
+  siteName?: string;
+}
+
+/**
+ * Ask the AI for a fresh estimate of the carrying-capacity inputs for a
+ * specific city. Returns parsed JSON; throws if the proxy is down or the
+ * response can't be parsed.
+ */
+export async function estimateCarryingCapacity(
+  city: City
+): Promise<CarryingCapacityEstimate> {
+  const systemPrompt = `You estimate tourism carrying-capacity inputs for the formula C = A × U_f / R_t.
+
+Given a city, choose its single most pressured tourist site and return ONLY a JSON object — no prose, no markdown fences. Use realistic estimates from widely-known data:
+
+{
+  "siteName": string (e.g. "St. Mark's Square"),
+  "area": number (m² of the focal site),
+  "spacePerPerson": number (m² per visitor — lower for crowded sites, 0.5–5),
+  "stayTime": number (typical visit duration in hours, 1–8),
+  "actualVisitors": number (estimated peak daily visitor count)
+}`;
+
+  const userPrompt = `City: ${city.name}, ${city.country}
+Brief: ${city.intro}
+Key challenges:
+${city.issues.map((i) => `- ${i.tag}: ${i.detail}`).join('\n')}
+
+Return JSON only.`;
+
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data = await response.json();
+  const text: string =
+    data.content?.find((c: { type: string }) => c.type === 'text')?.text ||
+    data.text ||
+    '';
+
+  // The model may wrap its JSON in code fences or add commentary; pull out
+  // the first balanced object.
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('No JSON object in AI response');
+  const parsed = JSON.parse(match[0]) as CarryingCapacityEstimate;
+
+  if (
+    typeof parsed.area !== 'number' ||
+    typeof parsed.spacePerPerson !== 'number' ||
+    typeof parsed.stayTime !== 'number' ||
+    typeof parsed.actualVisitors !== 'number'
+  ) {
+    throw new Error('AI response missing required numeric fields');
+  }
+  return parsed;
+}
