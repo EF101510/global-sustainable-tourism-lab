@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, MessageSquare } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Maximize2,
+  MessageSquare,
+  Minimize2,
+} from 'lucide-react';
 import BackgroundCarousel from '../components/BackgroundCarousel';
 import CarryingCapacityCalculator from '../components/CarryingCapacityCalculator';
 import FloatingAIChat from '../components/FloatingAIChat';
@@ -16,10 +22,14 @@ export default function CityDashboardPage() {
   // one of them collapses whichever was open before.
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [showBoard, setShowBoard] = useState(false);
+  // Preview mode: hides all chrome (top bar, panels, AI bubble) so the
+  // background imagery and the carousel dots are the only thing on screen.
+  const [previewMode, setPreviewMode] = useState(false);
 
-  // Reset expansion state when navigating to a different city.
+  // Reset expansion + preview state when navigating to a different city.
   useEffect(() => {
     setExpandedKey(null);
+    setPreviewMode(false);
   }, [id]);
 
   const toggle = (key: string) =>
@@ -32,29 +42,55 @@ export default function CityDashboardPage() {
     // bg-slate-900 is a fallback shown until the carousel's images finish
     // loading, so we never flash a blank white screen during navigation.
     <div className="relative w-full h-full overflow-hidden bg-slate-900">
-      <BackgroundCarousel resetKey={city.id} images={city.bg} />
+      <BackgroundCarousel
+        resetKey={city.id}
+        images={city.bg}
+        showOverlay={!previewMode}
+      />
 
-      {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between px-6 py-4">
+      {/* Top bar — fades out in preview mode so only the photo is visible.
+          `translateZ(0)` + `will-change: opacity` keep this on its own GPU
+          layer so the inner backdrop-blur buttons don't re-rasterise when
+          opacity transitions (which used to cause a one-frame flash). */}
+      <div
+        className={`relative z-10 flex items-center justify-between px-6 py-4 transition-opacity duration-500 ${
+          previewMode ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+        style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
+      >
         <button
           onClick={() => navigate('/', { state: { fromCity: true } })}
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-slate-700/40 hover:bg-slate-700/55 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/20 transition"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back to Globe</span>
         </button>
-        <button
-          onClick={() => setShowBoard(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
-        >
-          <MessageSquare className="w-4 h-4" />
-          <span className="text-sm">Student Board</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPreviewMode(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-700/40 hover:bg-slate-700/55 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/20 transition"
+          >
+            <Maximize2 className="w-4 h-4" />
+            <span className="text-sm">Preview</span>
+          </button>
+          <button
+            onClick={() => setShowBoard(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/25 transition"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span className="text-sm">Student Board</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main content — single column, scrollable, with a comfortable
-          reading width. AI chat is now a floating widget, not inline. */}
-      <div className="relative z-10 px-6 pb-6 h-[calc(100%-72px)] overflow-y-auto">
+      {/* Main content — fades out in preview mode. Same GPU-layer hint as
+          the top bar so the backdrop-blur cards inside transition cleanly. */}
+      <div
+        className={`relative z-10 px-6 pb-6 h-[calc(100%-72px)] overflow-y-auto transition-opacity duration-500 ${
+          previewMode ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+        style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
+      >
         <div className="max-w-2xl">
           <p className="text-xs tracking-widest text-cyan-300 mb-1">
             {city.region.toUpperCase()}
@@ -98,7 +134,22 @@ export default function CityDashboardPage() {
         </div>
       </div>
 
-      <FloatingAIChat city={city} />
+      {/* AI chat — pass `hidden` so the component itself fades its bubble
+          and panel; we can't wrap it in a transformed div without breaking
+          the inner fixed-position anchoring. */}
+      <FloatingAIChat city={city} hidden={previewMode} />
+
+      {/* Exit-preview floating button — appears at top-right in preview mode. */}
+      <button
+        onClick={() => setPreviewMode(false)}
+        aria-label="Exit preview"
+        className={`fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 bg-slate-700/40 hover:bg-slate-700/55 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/20 transition ${
+          previewMode ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <Minimize2 className="w-4 h-4" />
+        <span className="text-sm">Exit Preview</span>
+      </button>
 
       {showBoard && <StudentBoard city={city} onClose={() => setShowBoard(false)} />}
     </div>

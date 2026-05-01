@@ -3,12 +3,19 @@ import { ChevronDown, Sparkles } from 'lucide-react';
 import AIChat from './AIChat';
 import type { City } from '../types';
 
+interface FloatingAIChatProps {
+  city: City;
+  /** When true, the entire widget fades out (used for the page's preview
+   *  mode). Both bubble and panel honour this and become non-interactive. */
+  hidden?: boolean;
+}
+
 /**
  * Bottom-right floating widget: shows a "Ask AI" bubble by default; click
  * to expand into the full chat panel. Resets to collapsed when the city
  * changes so each city starts with a clean conversation.
  */
-export default function FloatingAIChat({ city }: { city: City }) {
+export default function FloatingAIChat({ city, hidden = false }: FloatingAIChatProps) {
   const [open, setOpen] = useState(false);
 
   // Auto-collapse when navigating to a different city.
@@ -22,8 +29,13 @@ export default function FloatingAIChat({ city }: { city: City }) {
       <button
         onClick={() => setOpen(true)}
         aria-label="Open AI chat"
+        style={{ willChange: 'opacity, transform' }}
         className={`fixed bottom-6 right-6 z-40 origin-bottom-right transition-all duration-300 ease-out flex items-center gap-2 px-5 py-3 rounded-full text-white ring-1 ring-white/30 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 shadow-[0_10px_28px_-8px_rgba(8,145,178,0.55)] ${
-          open ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'
+          hidden
+            ? 'opacity-0 scale-100 pointer-events-none'
+            : open
+            ? 'opacity-0 scale-50 pointer-events-none'
+            : 'opacity-100 scale-100'
         }`}
       >
         <Sparkles className="w-4 h-4" />
@@ -32,8 +44,11 @@ export default function FloatingAIChat({ city }: { city: City }) {
 
       {/* Expanded panel */}
       <div
+        style={{ willChange: 'opacity, transform' }}
         className={`fixed bottom-6 right-6 z-40 origin-bottom-right transition-all duration-300 ease-out w-[560px] max-w-[calc(100vw-3rem)] h-[760px] max-h-[90vh] ${
-          open
+          hidden
+            ? 'opacity-0 scale-100 pointer-events-none'
+            : open
             ? 'opacity-100 scale-100'
             : 'opacity-0 scale-90 pointer-events-none'
         }`}
