@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, BarChart3, MessageSquare } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, MessageSquare } from 'lucide-react';
 import BackgroundCarousel from '../components/BackgroundCarousel';
 import CarryingCapacityCalculator from '../components/CarryingCapacityCalculator';
 import FloatingAIChat from '../components/FloatingAIChat';
@@ -11,8 +11,19 @@ import { CITIES } from '../data/cities';
 export default function CityDashboardPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [expandedIssue, setExpandedIssue] = useState<number | null>(null);
+  // A single key tracks which card is expanded across the whole panel —
+  // issues and the carrying-capacity card share this state, so opening any
+  // one of them collapses whichever was open before.
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [showBoard, setShowBoard] = useState(false);
+
+  // Reset expansion state when navigating to a different city.
+  useEffect(() => {
+    setExpandedKey(null);
+  }, [id]);
+
+  const toggle = (key: string) =>
+    setExpandedKey((prev) => (prev === key ? null : key));
 
   const city = CITIES.find((c) => c.id === id);
   if (!city) return <Navigate to="/" replace />;
@@ -60,25 +71,29 @@ export default function CityDashboardPage() {
               </h3>
             </div>
             <div className="flex flex-col gap-3">
-              {city.issues.map((issue, i) => (
-                <IssueCard
-                  key={i}
-                  issue={issue}
-                  expanded={expandedIssue === i}
-                  onToggle={() => setExpandedIssue(expandedIssue === i ? null : i)}
-                />
-              ))}
+              {city.issues.map((issue, i) => {
+                const key = `issue-${i}`;
+                return (
+                  <IssueCard
+                    key={i}
+                    issue={issue}
+                    expanded={expandedKey === key}
+                    onToggle={() => toggle(key)}
+                  />
+                );
+              })}
             </div>
           </div>
 
-          <div className="mt-8 mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <BarChart3 className="w-4 h-4 text-cyan-300" />
-              <h3 className="text-sm font-semibold text-white tracking-wide">
-                CARRYING CAPACITY
-              </h3>
-            </div>
-            <CarryingCapacityCalculator city={city} />
+          {/* Carrying-capacity card — collapsible, same shape as issue
+              cards above. Shares the global mutex so opening it collapses
+              any open issue card and vice versa. */}
+          <div className="mt-3 mb-4">
+            <CarryingCapacityCalculator
+              city={city}
+              expanded={expandedKey === 'capacity'}
+              onToggle={() => toggle('capacity')}
+            />
           </div>
         </div>
       </div>
