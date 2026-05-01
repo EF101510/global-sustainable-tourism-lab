@@ -31,7 +31,8 @@ Answer in an educational, objective tone with concrete data and real cases. When
 1. Always reply in English (this is an English-language learning lab).
 2. Keep responses under 200 words, with clear points.
 3. Cite real cases or feasible solutions where relevant.
-4. End with one short follow-up question to keep the student thinking.`;
+4. End with one short follow-up question to keep the student thinking.
+5. Format the response using Markdown — short \`###\` sub-headings for sections, \`**bold**\` for key terms, and \`- \` bullet lists for enumerations. The chat UI renders Markdown cleanly. Do not use \`#\` (h1) or large headings; keep things compact.`;
 }
 
 /**
