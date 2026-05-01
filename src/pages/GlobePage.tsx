@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Globe2 } from 'lucide-react';
+import { ArrowUpRight, Globe2 } from 'lucide-react';
 import Globe, { type GlobeHoverState } from '../components/Globe';
 import type { City } from '../types';
 
@@ -62,42 +62,77 @@ export default function GlobePage() {
         </p>
       </div>
 
-      {/* Hover intro card */}
+      {/* Hover intro card — frosted glass */}
       {hoveredCity && !zoomingIn && (
         <div
           className="fixed pointer-events-none z-50"
           style={{
-            left: Math.min(hover.x + 20, window.innerWidth - 312),
-            top: Math.min(hover.y + 20, window.innerHeight - 280),
+            left: Math.min(hover.x + 20, window.innerWidth - 340),
+            top: Math.min(hover.y + 20, window.innerHeight - 320),
           }}
         >
-          <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-blue-100 overflow-hidden w-72">
-            <div className="px-4 py-3 bg-gradient-to-r from-blue-700 to-cyan-600">
-              <p className="text-[10px] text-cyan-100/90 tracking-[0.2em] font-medium">
-                {hoveredCity.region.toUpperCase()}
-              </p>
-              <p className="text-lg font-semibold text-white leading-tight mt-0.5">
+          <div
+            className="
+              w-80 overflow-hidden rounded-3xl
+              bg-white/40 backdrop-blur-2xl backdrop-saturate-150
+              border border-white/60
+              ring-1 ring-inset ring-white/40
+              shadow-[0_24px_60px_-15px_rgba(30,58,138,0.35)]
+            "
+          >
+            {/* Accent bar */}
+            <div className="h-[2px] bg-gradient-to-r from-blue-500/0 via-cyan-400 to-blue-500/0" />
+
+            {/* Title block */}
+            <div className="px-6 pt-5 pb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-500" />
+                <span className="text-[10px] tracking-[0.22em] font-semibold text-blue-700/80 uppercase">
+                  {hoveredCity.region}
+                </span>
+              </div>
+              <h3 className="text-2xl font-light text-slate-900 leading-tight tracking-tight">
                 {hoveredCity.name}
-              </p>
-              <p className="text-xs text-cyan-100 mt-0.5">{hoveredCity.country}</p>
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">{hoveredCity.country}</p>
             </div>
-            <div className="p-4">
-              <p className="text-xs text-gray-700 leading-relaxed mb-3">
+
+            {/* Soft divider */}
+            <div className="mx-6 h-px bg-gradient-to-r from-transparent via-blue-200/60 to-transparent" />
+
+            {/* Intro */}
+            <div className="px-6 pt-4 pb-3">
+              <p className="text-[12.5px] text-slate-700/90 leading-relaxed">
                 {hoveredCity.intro}
               </p>
-              <div className="flex flex-wrap gap-1">
-                {hoveredCity.issues.map((issue, i) => (
-                  <span
-                    key={i}
-                    className="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-100"
-                  >
-                    {issue.icon} {issue.tag}
-                  </span>
-                ))}
-              </div>
             </div>
-            <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 text-[11px] text-blue-600 text-center border-t border-blue-100">
-              Click to explore →
+
+            {/* Issue chips */}
+            <div className="px-6 pb-5 flex flex-wrap gap-1.5">
+              {hoveredCity.issues.map((issue, i) => (
+                <span
+                  key={i}
+                  className="
+                    inline-flex items-center gap-1
+                    text-[11px] font-medium text-slate-700
+                    bg-white/55 backdrop-blur-sm
+                    border border-white/70
+                    px-2.5 py-1 rounded-full
+                    shadow-[0_1px_2px_rgba(30,58,138,0.06)]
+                  "
+                >
+                  <span>{issue.icon}</span>
+                  <span>{issue.tag}</span>
+                </span>
+              ))}
+            </div>
+
+            {/* CTA footer */}
+            <div className="px-6 py-3 bg-gradient-to-r from-blue-500/10 via-cyan-500/15 to-blue-500/10 border-t border-white/50">
+              <p className="text-[11px] font-medium text-blue-700 flex items-center justify-center gap-1.5 tracking-wide">
+                Click to explore
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </p>
             </div>
           </div>
         </div>

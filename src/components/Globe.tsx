@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { City } from '../types';
 import { CITIES } from '../data/cities';
 import {
-  createTechEarthTexture,
+  createOceanTexture,
   latLngToVec3,
   upgradeWithTopoJSON,
 } from '../lib/three-globe';
@@ -51,7 +51,7 @@ export default function Globe({
     const globeRadius = 2.5;
     const globeGeometry = new THREE.SphereGeometry(globeRadius, 64, 64);
     const globeMaterial = new THREE.MeshBasicMaterial({
-      map: createTechEarthTexture(),
+      map: createOceanTexture(),
       transparent: true,
       opacity: 0.85,
     });
