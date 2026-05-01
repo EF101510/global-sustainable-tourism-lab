@@ -2,7 +2,14 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Globe2 } from 'lucide-react';
 import Globe, { type GlobeHoverState } from '../components/Globe';
+import { getFlagUrl } from '../lib/country-flags';
 import type { City } from '../types';
+
+function formatCoord(lat: number, lng: number) {
+  const latStr = `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'}`;
+  const lngStr = `${Math.abs(lng).toFixed(1)}°${lng >= 0 ? 'E' : 'W'}`;
+  return `${latStr} · ${lngStr}`;
+}
 
 export default function GlobePage() {
   const navigate = useNavigate();
@@ -67,58 +74,75 @@ export default function GlobePage() {
         <div
           className="fixed pointer-events-none z-50"
           style={{
-            left: Math.min(hover.x + 20, window.innerWidth - 340),
-            top: Math.min(hover.y + 20, window.innerHeight - 320),
+            left: Math.min(hover.x + 20, window.innerWidth - 288),
+            top: Math.min(hover.y + 20, window.innerHeight - 280),
           }}
         >
           <div
             className="
-              w-80 overflow-hidden rounded-3xl
-              bg-white/40 backdrop-blur-2xl backdrop-saturate-150
-              border border-white/60
-              ring-1 ring-inset ring-white/40
-              shadow-[0_24px_60px_-15px_rgba(30,58,138,0.35)]
+              w-64 overflow-hidden rounded-2xl
+              bg-white/20 backdrop-blur-2xl backdrop-saturate-150
+              border border-white/40
+              ring-1 ring-inset ring-white/30
+              shadow-[0_16px_40px_-12px_rgba(30,58,138,0.28)]
             "
           >
             {/* Accent bar */}
-            <div className="h-[2px] bg-gradient-to-r from-blue-500/0 via-cyan-400 to-blue-500/0" />
+            <div className="h-px bg-gradient-to-r from-cyan-400/0 via-cyan-400/80 to-cyan-400/0" />
 
             {/* Title block */}
-            <div className="px-6 pt-5 pb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-500" />
-                <span className="text-[10px] tracking-[0.22em] font-semibold text-blue-700/80 uppercase">
-                  {hoveredCity.region}
-                </span>
+            <div className="px-4 pt-3.5 pb-3.5">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-1.5 pt-1">
+                  <span className="inline-block h-1 w-1 rounded-full bg-cyan-500" />
+                  <span className="text-[9px] tracking-[0.22em] font-semibold text-blue-700/70 uppercase">
+                    {hoveredCity.region}
+                  </span>
+                </div>
+                {getFlagUrl(hoveredCity.country) && (
+                  <img
+                    src={getFlagUrl(hoveredCity.country)}
+                    alt=""
+                    className="w-7 h-[18px] rounded-sm object-cover ring-1 ring-white/60 shadow-[0_1px_3px_rgba(15,23,42,0.15)]"
+                  />
+                )}
               </div>
-              <h3 className="text-2xl font-light text-slate-900 leading-tight tracking-tight">
+              <h3 className="text-xl font-light text-slate-900 leading-[1.15] tracking-tight">
                 {hoveredCity.name}
               </h3>
-              <p className="text-xs text-slate-500 mt-1">{hoveredCity.country}</p>
+              <div className="mt-1 flex items-center gap-1.5 text-[10.5px] text-slate-500/90">
+                <span className="font-medium text-slate-600/90">
+                  {hoveredCity.country}
+                </span>
+                <span className="text-slate-400">·</span>
+                <span className="font-mono text-[10px] text-slate-500/70 tabular-nums">
+                  {formatCoord(hoveredCity.lat, hoveredCity.lng)}
+                </span>
+              </div>
             </div>
 
             {/* Soft divider */}
-            <div className="mx-6 h-px bg-gradient-to-r from-transparent via-blue-200/60 to-transparent" />
+            <div className="mx-4 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
 
             {/* Intro */}
-            <div className="px-6 pt-4 pb-3">
-              <p className="text-[12.5px] text-slate-700/90 leading-relaxed">
+            <div className="px-4 pt-2.5 pb-4">
+              <p className="text-[11.5px] text-slate-700/85 leading-relaxed">
                 {hoveredCity.intro}
               </p>
             </div>
 
-            {/* Issue chips */}
-            <div className="px-6 pb-5 flex flex-wrap gap-1.5">
+            {/* Issue chips — hidden for now, kept for future re-enable */}
+            {/*
+            <div className="px-4 pb-4 flex flex-wrap gap-1">
               {hoveredCity.issues.map((issue, i) => (
                 <span
                   key={i}
                   className="
-                    inline-flex items-center gap-1
-                    text-[11px] font-medium text-slate-700
-                    bg-white/55 backdrop-blur-sm
-                    border border-white/70
-                    px-2.5 py-1 rounded-full
-                    shadow-[0_1px_2px_rgba(30,58,138,0.06)]
+                    inline-flex items-center gap-0.5
+                    text-[10px] font-medium text-slate-700/85
+                    bg-white/25 backdrop-blur-sm
+                    border border-white/40
+                    px-2 py-0.5 rounded-full
                   "
                 >
                   <span>{issue.icon}</span>
@@ -126,12 +150,13 @@ export default function GlobePage() {
                 </span>
               ))}
             </div>
+            */}
 
             {/* CTA footer */}
-            <div className="px-6 py-3 bg-gradient-to-r from-blue-500/10 via-cyan-500/15 to-blue-500/10 border-t border-white/50">
-              <p className="text-[11px] font-medium text-blue-700 flex items-center justify-center gap-1.5 tracking-wide">
+            <div className="px-4 py-2 bg-gradient-to-r from-blue-500/5 via-cyan-500/10 to-blue-500/5 border-t border-white/30">
+              <p className="text-[10px] font-medium text-blue-700/90 flex items-center justify-center gap-1 tracking-wide">
                 Click to explore
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <ArrowUpRight className="w-3 h-3" />
               </p>
             </div>
           </div>
