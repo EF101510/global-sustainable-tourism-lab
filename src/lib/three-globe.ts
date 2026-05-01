@@ -93,21 +93,115 @@ export async function upgradeWithTopoJSON(material: THREE.MeshBasicMaterial): Pr
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
 
-      const drawPoly = (rings: [number, number][][]) => {
-        if (!rings || !rings[0] || rings[0].length < 3) return;
+      // Project a (lng, lat) pair to canvas coordinates. lng is expected
+      // already-normalised to [-180, 180]; lat to [-90, 90].
+      const project = (lng: number, lat: number): [number, number] => [
+        ((lng + 180) / 360) * W,
+        ((90 - lat) / 180) * H,
+      ];
+
+      // Split a ring at antimeridian crossings (where consecutive points
+      // differ in longitude by > 180°). At each crossing we close the
+      // current sub-ring by walking up/over the pole along the canvas
+      // edge, and start a new sub-ring on the other side. This prevents
+      // the diagonal "shortcut" strokes that produce the concentric ring
+      // artifacts at the North Pole (and elsewhere).
+      const splitRingAtAntimeridian = (
+        ring: [number, number][]
+      ): [number, number][][] => {
+        if (ring.length < 2) return [ring];
+        const subs: [number, number][][] = [];
+        let current: [number, number][] = [];
+        for (let i = 0; i < ring.length; i++) {
+          const [lng, lat] = ring[i];
+          if (i === 0) {
+            current.push([lng, lat]);
+            continue;
+          }
+          const [pLng, pLat] = ring[i - 1];
+          const dLng = lng - pLng;
+          if (Math.abs(dLng) > 180) {
+            // Antimeridian crossing. Compute the latitude at which the
+            // segment crosses ±180 by linear interpolation in a frame
+            // where we shift the wrapped point by ±360 to be continuous.
+            const adjLng = lng + (dLng > 0 ? -360 : 360);
+            const total = adjLng - pLng;
+            const tEdgeLng = pLng < 0 ? -180 : 180;
+            const t = total !== 0 ? (tEdgeLng - pLng) / total : 0;
+            const crossLat = pLat + (lat - pLat) * t;
+
+            // Decide which pole this segment likely wraps over: if the
+            // crossing latitude is closer to the north pole than the
+            // south, use +90 as the wrap edge. This makes Arctic-spanning
+            // polygons walk along the top of the canvas instead of
+            // cutting diagonally.
+            const poleLat = crossLat >= 0 ? 90 : -90;
+            const exitLng = pLng < 0 ? -180 : 180;
+            const enterLng = -exitLng;
+
+            // Close current sub-ring by going to the edge, then up to
+            // the pole corner.
+            current.push([exitLng, crossLat]);
+            current.push([exitLng, poleLat]);
+            current.push([enterLng, poleLat]);
+            current.push([enterLng, crossLat]);
+            subs.push(current);
+            current = [[enterLng, crossLat], [lng, lat]];
+          } else {
+            current.push([lng, lat]);
+          }
+        }
+        if (current.length >= 3) subs.push(current);
+        return subs;
+      };
+
+      const strokeRing = (ring: [number, number][]) => {
+        // Stroke only the original (non-pole-edge) segments so we don't
+        // draw a hard line along the canvas top/bottom or the antimeridian.
         ctx.beginPath();
-        rings[0].forEach(([lng, lat], i) => {
-          const x = ((lng + 180) / 360) * W;
-          const y = ((90 - lat) / 180) * H;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        });
-        ctx.closePath();
-        ctx.fillStyle = '#4a78a3';
-        ctx.fill();
+        let penDown = false;
+        for (let i = 0; i < ring.length; i++) {
+          const [lng, lat] = ring[i];
+          const onPole = lat >= 90 - 1e-6 || lat <= -90 + 1e-6;
+          const onAnti = Math.abs(Math.abs(lng) - 180) < 1e-6;
+          const [x, y] = project(lng, lat);
+          if (onPole || onAnti) {
+            penDown = false;
+            continue;
+          }
+          if (!penDown) {
+            ctx.moveTo(x, y);
+            penDown = true;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
         ctx.strokeStyle = '#cfe7f5';
         ctx.lineWidth = 2;
         ctx.stroke();
+      };
+
+      const drawPoly = (rings: [number, number][][]) => {
+        if (!rings || !rings[0] || rings[0].length < 3) return;
+        const outer = rings[0];
+        const subs = splitRingAtAntimeridian(outer);
+        // Fill all sub-rings as a single path (handles donut/holes via
+        // even-odd if needed, though world-atlas outer ring usually
+        // doesn't have holes for land).
+        ctx.beginPath();
+        for (const sub of subs) {
+          sub.forEach(([lng, lat], i) => {
+            const [x, y] = project(lng, lat);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.closePath();
+        }
+        ctx.fillStyle = '#4a78a3';
+        ctx.fill('evenodd');
+        // Stroke the original ring (not the pole-edge fillers) for a
+        // clean coastline.
+        for (const sub of subs) strokeRing(sub);
       };
 
       const drawGeom = (geom: any) => {

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import BackgroundCarousel from '../components/BackgroundCarousel';
 import CarryingCapacityCalculator from '../components/CarryingCapacityCalculator';
+import CityOverview from '../components/CityOverview';
 import FloatingAIChat from '../components/FloatingAIChat';
 import IssueCard from '../components/IssueCard';
 import StudentBoard from '../components/StudentBoard';
@@ -99,7 +100,19 @@ export default function CityDashboardPage() {
           <p className="text-lg text-white/80 mt-1">{city.country}</p>
           <p className="text-sm text-white/70 mt-3 leading-relaxed">{city.intro}</p>
 
-          <div className="mt-8">
+          {/* Overview card — rich multi-section context (features /
+              environment / geography / products / economy). Shares the
+              global single-card-open mutex with the issue & capacity
+              cards below. */}
+          <div className="mt-6">
+            <CityOverview
+              city={city}
+              expanded={expandedKey === 'overview'}
+              onToggle={() => toggle('overview')}
+            />
+          </div>
+
+          <div className="mt-6">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-amber-300" />
               <h3 className="text-sm font-semibold text-white tracking-wide">
