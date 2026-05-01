@@ -53,7 +53,7 @@ export default function Globe({
     const globeMaterial = new THREE.MeshBasicMaterial({
       map: createOceanTexture(),
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.65,
     });
     const globe = new THREE.Mesh(globeGeometry, globeMaterial);
     scene.add(globe);
@@ -64,14 +64,14 @@ export default function Globe({
     // Lat/lng grid
     const gridGroup = new THREE.Group();
     const gridMat = new THREE.LineBasicMaterial({
-      color: 0x3b82f6,
-      transparent: true,
-      opacity: 0.35,
-    });
-    const equatorMat = new THREE.LineBasicMaterial({
       color: 0x60a5fa,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.28,
+    });
+    const equatorMat = new THREE.LineBasicMaterial({
+      color: 0x93c5fd,
+      transparent: true,
+      opacity: 0.5,
     });
     for (let latDeg = -75; latDeg <= 75; latDeg += 15) {
       const pts = [];
@@ -93,13 +93,42 @@ export default function Globe({
     }
     scene.add(gridGroup);
 
-    // Atmosphere glow
-    const glowGeometry = new THREE.SphereGeometry(globeRadius * 1.08, 64, 64);
-    const glowMaterial = new THREE.MeshBasicMaterial({
-      color: 0x22d3ee,
-      transparent: true,
-      opacity: 0.18,
+    // Atmosphere glow — fresnel-falloff shader so it fades smoothly into the
+    // background instead of having a hard outer silhouette.
+    const glowGeometry = new THREE.SphereGeometry(globeRadius * 1.22, 64, 64);
+    const glowMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        glowColor: { value: new THREE.Color(0x38bdf8) },
+        intensityScale: { value: 1.6 },
+        power: { value: 2.4 },
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vViewDir;
+        void main() {
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vNormal = normalize(normalMatrix * normal);
+          vViewDir = normalize(-mvPosition.xyz);
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        uniform float intensityScale;
+        uniform float power;
+        varying vec3 vNormal;
+        varying vec3 vViewDir;
+        void main() {
+          // Fresnel: |dot| is high near the globe rim and ~0 at the outer
+          // silhouette of the glow sphere, so the ring fades to background.
+          float fresnel = pow(abs(dot(vNormal, vViewDir)), power);
+          float alpha = clamp(fresnel * intensityScale, 0.0, 1.0);
+          gl_FragColor = vec4(glowColor, alpha);
+        }
+      `,
       side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
     });
     const glow = new THREE.Mesh(glowGeometry, glowMaterial);
     scene.add(glow);
@@ -318,6 +347,8 @@ export default function Globe({
       renderer.dispose();
       globeGeometry.dispose();
       globeMaterial.dispose();
+      glowGeometry.dispose();
+      glowMaterial.dispose();
       gridMat.dispose();
       equatorMat.dispose();
       gridGroup.children.forEach((line) => (line as THREE.Line).geometry.dispose());

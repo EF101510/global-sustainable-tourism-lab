@@ -25,9 +25,9 @@ export function createOceanTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext('2d')!;
 
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, '#5d8ab1');
-  grad.addColorStop(0.5, '#7fa9cc');
-  grad.addColorStop(1, '#5d8ab1');
+  grad.addColorStop(0, '#9ec4e2');
+  grad.addColorStop(0.5, '#c1ddee');
+  grad.addColorStop(1, '#9ec4e2');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
@@ -87,9 +87,9 @@ export async function upgradeWithTopoJSON(material: THREE.MeshBasicMaterial): Pr
 
       // Ocean
       const g = ctx.createLinearGradient(0, 0, 0, H);
-      g.addColorStop(0, '#5d8ab1');
-      g.addColorStop(0.5, '#7fa9cc');
-      g.addColorStop(1, '#5d8ab1');
+      g.addColorStop(0, '#9ec4e2');
+      g.addColorStop(0.5, '#c1ddee');
+      g.addColorStop(1, '#9ec4e2');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
 
@@ -103,9 +103,9 @@ export async function upgradeWithTopoJSON(material: THREE.MeshBasicMaterial): Pr
           else ctx.lineTo(x, y);
         });
         ctx.closePath();
-        ctx.fillStyle = '#1e3a5f';
+        ctx.fillStyle = '#4a78a3';
         ctx.fill();
-        ctx.strokeStyle = '#9cd1ec';
+        ctx.strokeStyle = '#cfe7f5';
         ctx.lineWidth = 2;
         ctx.stroke();
       };
