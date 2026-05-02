@@ -118,11 +118,11 @@ export default function CarryingCapacityCalculator({
           don't get nested inside this <button> element. */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+        className="w-full flex items-center justify-between px-5 py-4 text-left"
       >
         <div className="flex items-center gap-3">
-          <BarChart3 className="w-5 h-5 text-cyan-300" />
-          <span className="text-sm font-semibold text-white">
+          <BarChart3 className="w-6 h-6 text-cyan-300" />
+          <span className="text-base font-semibold text-white">
             Carrying Capacity
           </span>
         </div>
@@ -137,7 +137,7 @@ export default function CarryingCapacityCalculator({
             </span>
           )}
           <ChevronDown
-            className={`w-4 h-4 text-white/60 transition-transform duration-300 ${
+            className={`w-5 h-5 text-white/60 transition-transform duration-300 ${
               expanded ? 'rotate-180' : ''
             }`}
           />
@@ -151,7 +151,7 @@ export default function CarryingCapacityCalculator({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-4 pb-4 space-y-5 text-white">
+          <div className="px-5 pb-5 space-y-5 text-white">
             {/* Site label + AI estimate button */}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -177,7 +177,7 @@ export default function CarryingCapacityCalculator({
             {/* Formula */}
             <div className="bg-white/5 border border-white/10 rounded-lg py-4 px-3 text-center">
               <Formula tex="C = \frac{A \times U_f}{R_t}" />
-              <p className="text-[10.5px] text-white/55 mt-2 leading-relaxed max-w-md mx-auto">
+              <p className="text-xs text-white/55 mt-2 leading-relaxed max-w-md mx-auto">
                 A = site area · U<sub>f</sub> = space per person · R
                 <sub>t</sub> = average stay time. Overtourism occurs when
                 actual visitors exceed C.
@@ -185,7 +185,7 @@ export default function CarryingCapacityCalculator({
             </div>
 
             {estimateError && (
-              <div className="bg-amber-500/10 border border-amber-300/30 rounded-md px-3 py-2 text-[11px] text-amber-100/90">
+              <div className="bg-amber-500/10 border border-amber-300/30 rounded-md px-3 py-2 text-xs text-amber-100/90">
                 {estimateError}
               </div>
             )}
@@ -274,7 +274,7 @@ export default function CarryingCapacityCalculator({
 
             {/* Status banner */}
             <div
-              className={`rounded-lg px-4 py-3 text-xs leading-relaxed border ${
+              className={`rounded-lg px-4 py-3 text-sm leading-relaxed border ${
                 overTourism
                   ? 'bg-rose-500/15 border-rose-300/30 text-rose-50'
                   : 'bg-emerald-500/15 border-emerald-300/30 text-emerald-50'

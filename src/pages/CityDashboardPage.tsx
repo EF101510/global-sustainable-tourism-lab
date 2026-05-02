@@ -74,52 +74,59 @@ export default function CityDashboardPage() {
         dragEnabled={previewMode}
       />
 
-      {/* Top bar — fades out in preview mode so only the photo is visible.
-          NB: do NOT add transform/will-change here — they create a new
-          stacking context that prevents the inner backdrop-blur buttons
-          from seeing (and blurring) the carousel photo underneath. */}
+      {/* Top bar — hidden in preview mode. NB: do NOT animate opacity here.
+          A wrapper with opacity < 1 (or transform / filter / will-change)
+          establishes a stacking context, which prevents the inner
+          glass-button's `backdrop-filter` from seeing the carousel photo
+          underneath. We toggle display instead of opacity for an instant
+          show/hide that keeps the blur correct from the first frame.
+
+          Padding is hard-coded in px (instead of `px-6 py-4`) because
+          this row hosts the FontSizeControl — if the row's padding scaled
+          with the root font-size, the buttons would shift between clicks
+          and the user couldn't tap +A repeatedly without re-aiming. */}
       <div
-        className={`relative z-10 flex items-center justify-between px-6 py-4 transition-opacity duration-500 ${
-          previewMode ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        className={`relative z-10 flex items-center justify-between ${
+          previewMode ? 'hidden' : ''
         }`}
+        style={{ padding: '16px 24px' }}
       >
         <button
           onClick={() => navigate('/', { state: { fromCity: true } })}
-          className="glass-button flex items-center gap-2 px-4 py-2 rounded-lg text-white"
+          className="glass-button chrome-button text-white"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Back to Globe</span>
+          <ArrowLeft size={16} />
+          <span>Back to Globe</span>
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center" style={{ gap: 8 }}>
           <FontSizeControl />
           <button
             onClick={() => setPreviewMode(true)}
-            className="glass-button flex items-center gap-2 px-4 py-2 rounded-lg text-white"
+            className="glass-button chrome-button text-white"
           >
-            <Maximize2 className="w-4 h-4" />
-            <span className="text-sm">Preview</span>
+            <Maximize2 size={16} />
+            <span>Preview</span>
           </button>
           <button
             onClick={() => setShowBoard(true)}
-            className="glass-button flex items-center gap-2 px-4 py-2 rounded-lg text-white"
+            className="glass-button chrome-button text-white"
           >
-            <MessageSquare className="w-4 h-4" />
-            <span className="text-sm">Student Board</span>
+            <MessageSquare size={16} />
+            <span>Student Board</span>
           </button>
         </div>
       </div>
 
-      {/* Main content — fades out in preview mode. NB: no transform /
-          will-change here — they would create a stacking context that
-          breaks the backdrop-blur of the cards inside (the cards need to
-          "see through" to the carousel photo, which sits outside this
-          wrapper). */}
+      {/* Main content — hidden in preview mode. Same reason as the top bar
+          above: opacity-fading this wrapper would create a stacking context
+          while opacity < 1, breaking the inner glass-card cards'
+          backdrop-filter. Use display toggle instead. */}
       <div
-        className={`relative z-10 px-6 pb-6 h-[calc(100%-72px)] overflow-y-auto transition-opacity duration-500 ${
-          previewMode ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        className={`relative z-10 px-6 pb-6 h-[calc(100%-72px)] overflow-y-auto ${
+          previewMode ? 'hidden' : ''
         }`}
       >
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <p className="text-xs tracking-widest text-cyan-300 mb-1">
             {city.region.toUpperCase()}
           </p>
@@ -183,12 +190,12 @@ export default function CityDashboardPage() {
       <button
         onClick={() => setPreviewMode(false)}
         aria-label="Exit preview"
-        className={`glass-button fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-opacity duration-300 ${
+        className={`glass-button chrome-button fixed top-4 right-4 z-30 text-white transition-opacity duration-300 ${
           previewMode ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <Minimize2 className="w-4 h-4" />
-        <span className="text-sm">Exit Preview</span>
+        <Minimize2 size={16} />
+        <span>Exit Preview</span>
       </button>
 
       {showBoard && <StudentBoard city={city} onClose={() => setShowBoard(false)} />}

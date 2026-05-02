@@ -39,14 +39,14 @@ export default function CityOverview({ city, expanded, onToggle }: CityOverviewP
     <div className={`glass-card rounded-xl ${expanded ? 'is-active' : ''}`}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+        className="w-full flex items-center justify-between px-5 py-4 text-left"
       >
         <div className="flex items-center gap-3">
-          <BookOpen className="w-5 h-5 text-cyan-300" />
-          <span className="text-sm font-semibold text-white">Overview</span>
+          <BookOpen className="w-6 h-6 text-cyan-300" />
+          <span className="text-base font-semibold text-white">Overview</span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-white/60 transition-transform duration-300 ${
+          className={`w-5 h-5 text-white/60 transition-transform duration-300 ${
             expanded ? 'rotate-180' : ''
           }`}
         />
@@ -58,16 +58,16 @@ export default function CityOverview({ city, expanded, onToggle }: CityOverviewP
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-4 pb-4 space-y-4 text-white">
+          <div className="px-5 pb-5 space-y-4 text-white">
             {SECTIONS.map(({ key, label, Icon }) => (
               <section key={key} className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <Icon className="w-3.5 h-3.5 text-cyan-200" />
-                  <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-cyan-100/85">
+                  <Icon className="w-4 h-4 text-cyan-200" />
+                  <span className="text-xs uppercase tracking-[0.18em] font-semibold text-cyan-100/85">
                     {label}
                   </span>
                 </div>
-                <p className="text-[12.5px] text-white/85 leading-relaxed pl-5">
+                <p className="text-sm text-white/85 leading-relaxed pl-5">
                   {details[key]}
                 </p>
               </section>

@@ -128,12 +128,12 @@ export default function AIChat({ city }: { city: City }) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && (
           <div className="space-y-2">
-            <p className="text-xs text-white/70 mb-3">Pick a question to start, or ask your own:</p>
+            <p className="text-sm text-white/70 mb-3">Pick a question to start, or ask your own:</p>
             {presetQuestions.map((q, i) => (
               <button
                 key={i}
                 onClick={() => send(q)}
-                className="w-full text-left text-xs text-white/90 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 border border-white/10 transition"
+                className="w-full text-left text-sm text-white/90 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 border border-white/10 transition"
               >
                 {q}
               </button>
@@ -146,7 +146,7 @@ export default function AIChat({ city }: { city: City }) {
             className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[85%] px-3 py-2 rounded-2xl text-xs leading-relaxed ${
+              className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
                 m.role === 'user'
                   ? 'bg-cyan-500/80 text-white rounded-br-sm'
                   : 'bg-white/20 text-white rounded-bl-sm'
@@ -191,7 +191,7 @@ export default function AIChat({ city }: { city: City }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send(input)}
             placeholder="Ask a question..."
-            className="flex-1 bg-white/10 text-white placeholder-white/40 text-xs rounded-lg px-3 py-2 border border-white/20 focus:outline-none focus:border-cyan-400"
+            className="flex-1 bg-white/10 text-white placeholder-white/40 text-sm rounded-lg px-3 py-2 border border-white/20 focus:outline-none focus:border-cyan-400"
           />
           <button
             onClick={() => send(input)}

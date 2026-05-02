@@ -56,6 +56,22 @@ body,
   .glass-button:hover {
     background-color: rgb(255 255 255 / 0.20);
   }
+
+  /* Chrome-button dimensions in absolute pixels. Pair with `.glass-button`
+     for the dashboard's top-bar controls. We keep these px-fixed (instead
+     of Tailwind's rem-based `px-4 py-2 text-sm gap-2`) because the global
+     font-scale is driven from inside this same chrome row — if the
+     buttons themselves scaled, every click would reflow the row and move
+     the cursor off the +A button between clicks. */
+  .chrome-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.25;
+  }
 }
 
 /* macOS-style Ken Burns: slow zoom + subtle pan, three direction variants
