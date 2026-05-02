@@ -41,7 +41,7 @@ export default function FontSizeControl() {
   const inc = () => canInc && setScale(STEPS[idx + 1]);
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1 liquid-glass rounded-lg text-white">
+    <div className="flex items-center gap-1 px-2 py-1 bg-white/10 backdrop-blur-md rounded-lg text-white border border-white/20">
       <Type className="w-3.5 h-3.5 text-white/70 mr-0.5" aria-hidden />
       <button
         onClick={dec}

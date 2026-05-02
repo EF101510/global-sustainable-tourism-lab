@@ -11,39 +11,6 @@ body,
     'PingFang TC', 'Microsoft JhengHei', sans-serif;
 }
 
-/* iPhone "liquid glass" — heavy blur + saturation + brightness lift, with a
-   thin top highlight (inset shadow) that mimics how glass catches light at
-   its top edge. Used across the city dashboard chrome (cards + buttons). */
-@layer components {
-  /* Frosted glass over the dashboard photo. Recipe mirrors the Globe hover
-     card (bright, blurry, dark text on top): a light white wash so the
-     blur is actually visible, heavy backdrop blur to smear the photo into
-     soft colour gradients, plus a saturation lift so colours stay alive.
-     Double border (outer 40% + inset white ring 30%) gives the card edge
-     its glass quality. */
-  .liquid-glass {
-    background-color: rgba(255, 255, 255, 0.22);
-    backdrop-filter: blur(80px) saturate(180%) brightness(112%);
-    -webkit-backdrop-filter: blur(80px) saturate(180%) brightness(112%);
-    border: 1px solid rgba(255, 255, 255, 0.40);
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.30),
-      0 16px 40px -12px rgba(15, 23, 42, 0.35);
-  }
-  .liquid-glass-hover:hover {
-    background-color: rgba(255, 255, 255, 0.30);
-  }
-  .liquid-glass-strong {
-    background-color: rgba(255, 255, 255, 0.28);
-    backdrop-filter: blur(100px) saturate(190%) brightness(115%);
-    -webkit-backdrop-filter: blur(100px) saturate(190%) brightness(115%);
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.32),
-      0 18px 44px -12px rgba(15, 23, 42, 0.40);
-  }
-}
-
 /* macOS-style Ken Burns: slow zoom + subtle pan, three direction variants
    so successive images feel organic rather than mechanical. */
 @keyframes kenburns-a {

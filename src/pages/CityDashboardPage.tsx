@@ -86,7 +86,7 @@ export default function CityDashboardPage() {
       >
         <button
           onClick={() => navigate('/', { state: { fromCity: true } })}
-          className="flex items-center gap-2 px-4 py-2 liquid-glass liquid-glass-hover rounded-lg text-white transition"
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back to Globe</span>
@@ -95,14 +95,14 @@ export default function CityDashboardPage() {
           <FontSizeControl />
           <button
             onClick={() => setPreviewMode(true)}
-            className="flex items-center gap-2 px-4 py-2 liquid-glass liquid-glass-hover rounded-lg text-white transition"
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
           >
             <Maximize2 className="w-4 h-4" />
             <span className="text-sm">Preview</span>
           </button>
           <button
             onClick={() => setShowBoard(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/25 transition"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
           >
             <MessageSquare className="w-4 h-4" />
             <span className="text-sm">Student Board</span>
@@ -182,7 +182,7 @@ export default function CityDashboardPage() {
       <button
         onClick={() => setPreviewMode(false)}
         aria-label="Exit preview"
-        className={`fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 liquid-glass liquid-glass-hover rounded-lg text-white transition ${
+        className={`fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition ${
           previewMode ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >

@@ -160,7 +160,7 @@ export default function BackgroundCarousel({
         );
       })}
       <div
-        className={`absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/45 pointer-events-none transition-opacity duration-500 ${
+        className={`absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70 pointer-events-none transition-opacity duration-500 ${
           showOverlay ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ zIndex: images.length }}
