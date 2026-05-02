@@ -15,7 +15,14 @@ interface BackgroundCarouselProps {
   /** Whether to render the dark gradient that improves text contrast on
    *  top of the photo. Hidden in preview mode for a clean image. */
   showOverlay?: boolean;
+  /** When true, render a transparent capture layer that turns horizontal
+   *  pointer drags into prev/next nav. Off by default so dashboard chrome
+   *  (cards, scrolling) keeps working normally. */
+  dragEnabled?: boolean;
 }
+
+// Horizontal drag distance (px) needed to commit a swipe.
+const DRAG_THRESHOLD_PX = 60;
 
 /**
  * Layered cross-fade background gallery with macOS-style Ken Burns zoom.
@@ -35,10 +42,38 @@ export default function BackgroundCarousel({
   resetKey,
   images,
   showOverlay = true,
+  dragEnabled = false,
 }: BackgroundCarouselProps) {
-  const { index, goTo } = useBackgroundCarousel(images, {
+  const { index, goTo, next, prev } = useBackgroundCarousel(images, {
     intervalMs: BG_INTERVAL_MS,
   });
+
+  // Drag tracking for the optional swipe-to-switch capture layer. We only
+  // commit a navigation on pointer up, once total horizontal distance
+  // crosses DRAG_THRESHOLD_PX. Vertical-dominant drags are ignored so a
+  // tap or near-vertical gesture doesn't cycle images.
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = dragStartRef.current;
+    dragStartRef.current = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dx) < DRAG_THRESHOLD_PX) return;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < 0) next();
+    else prev();
+  };
+
+  const handlePointerCancel = () => {
+    dragStartRef.current = null;
+  };
 
   // Preload images so a freshly-activated layer never flashes blank while
   // the browser fetches the JPG. We only need this once per image URL.
@@ -125,11 +160,25 @@ export default function BackgroundCarousel({
         );
       })}
       <div
-        className={`absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70 pointer-events-none transition-opacity duration-500 ${
+        className={`absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/45 pointer-events-none transition-opacity duration-500 ${
           showOverlay ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ zIndex: images.length }}
       />
+
+      {/* Drag-to-switch capture layer. Sits above the images + gradient but
+          below the dot indicators (z-20), so dots remain clickable. Only
+          enabled in preview mode — outside preview, dashboard cards must
+          receive pointer events instead. */}
+      {dragEnabled && images.length > 1 && (
+        <div
+          className="absolute inset-0"
+          style={{ zIndex: 15, touchAction: 'pan-y', cursor: 'grab' }}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+        />
+      )}
 
       <div className="absolute z-20 bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
         {images.map((_, i) => (

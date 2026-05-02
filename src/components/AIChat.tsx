@@ -119,7 +119,7 @@ export default function AIChat({ city }: { city: City }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-700/40 backdrop-blur-3xl backdrop-saturate-[180%] rounded-2xl border border-white/20 overflow-hidden">
+    <div className="flex flex-col h-full liquid-glass-strong rounded-2xl overflow-hidden">
       <div className="px-4 py-3 border-b border-white/20 flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-cyan-300" />
         <h3 className="text-sm font-semibold text-white">AI Sustainability Diagnosis</h3>

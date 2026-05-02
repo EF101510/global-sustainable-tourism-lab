@@ -11,6 +11,7 @@ import BackgroundCarousel from '../components/BackgroundCarousel';
 import CarryingCapacityCalculator from '../components/CarryingCapacityCalculator';
 import CityOverview from '../components/CityOverview';
 import FloatingAIChat from '../components/FloatingAIChat';
+import FontSizeControl from '../components/FontSizeControl';
 import IssueCard from '../components/IssueCard';
 import StudentBoard from '../components/StudentBoard';
 import { CITIES } from '../data/cities';
@@ -70,6 +71,7 @@ export default function CityDashboardPage() {
         resetKey={city.id}
         images={city.bg}
         showOverlay={!previewMode}
+        dragEnabled={previewMode}
       />
 
       {/* Top bar — fades out in preview mode so only the photo is visible.
@@ -84,15 +86,16 @@ export default function CityDashboardPage() {
       >
         <button
           onClick={() => navigate('/', { state: { fromCity: true } })}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-700/40 hover:bg-slate-700/55 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/20 transition"
+          className="flex items-center gap-2 px-4 py-2 liquid-glass liquid-glass-hover rounded-lg text-white transition"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back to Globe</span>
         </button>
         <div className="flex items-center gap-2">
+          <FontSizeControl />
           <button
             onClick={() => setPreviewMode(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-700/40 hover:bg-slate-700/55 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/20 transition"
+            className="flex items-center gap-2 px-4 py-2 liquid-glass liquid-glass-hover rounded-lg text-white transition"
           >
             <Maximize2 className="w-4 h-4" />
             <span className="text-sm">Preview</span>
@@ -179,7 +182,7 @@ export default function CityDashboardPage() {
       <button
         onClick={() => setPreviewMode(false)}
         aria-label="Exit preview"
-        className={`fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 bg-slate-700/40 hover:bg-slate-700/55 backdrop-blur-3xl backdrop-saturate-[180%] rounded-lg text-white border border-white/20 transition ${
+        className={`fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 liquid-glass liquid-glass-hover rounded-lg text-white transition ${
           previewMode ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
