@@ -275,7 +275,7 @@ export default function StudentBoard({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/50 backdrop-blur-sm">
-      <div className="glass-panel rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col text-white">
+      <div className="glass-modal rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col text-white">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/15">
           <div>
             <h3 className="text-lg font-semibold text-white">
@@ -624,7 +624,7 @@ function ConfirmDialog({
       onClick={onCancel}
     >
       <div
-        className="glass-panel rounded-xl shadow-2xl w-full max-w-md p-6 text-white"
+        className="glass-modal rounded-xl shadow-2xl w-full max-w-md p-6 text-white"
         onClick={(e) => e.stopPropagation()}
       >
         <h4 className="text-base font-semibold text-white">{title}</h4>
