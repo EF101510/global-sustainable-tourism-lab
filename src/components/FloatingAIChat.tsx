@@ -30,7 +30,7 @@ export default function FloatingAIChat({ city, hidden = false }: FloatingAIChatP
         onClick={() => setOpen(true)}
         aria-label="Open AI chat"
         style={{ willChange: 'opacity, transform' }}
-        className={`fixed bottom-6 right-6 z-40 origin-bottom-right transition-all duration-300 ease-out flex items-center gap-2 px-5 py-3 rounded-full text-white ring-1 ring-white/30 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 shadow-[0_10px_28px_-8px_rgba(8,145,178,0.55)] ${
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 origin-bottom-right transition-all duration-300 ease-out flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-white ring-1 ring-white/30 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 shadow-[0_10px_28px_-8px_rgba(8,145,178,0.55)] ${
           hidden
             ? 'opacity-0 scale-100 pointer-events-none'
             : open
@@ -51,7 +51,7 @@ export default function FloatingAIChat({ city, hidden = false }: FloatingAIChatP
           only when the animation finishes. Skipping the panel animation
           (the bubble still fades) avoids that visible re-frost. */}
       {!hidden && open && (
-        <div className="fixed bottom-6 right-6 z-40 w-[560px] max-w-[calc(100vw-3rem)] h-[760px] max-h-[90vh]">
+        <div className="fixed bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-40 sm:w-[560px] sm:max-w-[calc(100vw-3rem)] h-[calc(100vh-1.5rem)] sm:h-[760px] sm:max-h-[90vh]">
           <div className="relative w-full h-full">
             <AIChat city={city} />
             <button

@@ -118,21 +118,21 @@ export default function CarryingCapacityCalculator({
           don't get nested inside this <button> element. */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 text-left"
+        className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3 sm:py-4 text-left"
       >
-        <div className="flex items-center gap-3">
-          <BarChart3 className="w-6 h-6 text-cyan-300" />
-          <span className="text-base font-semibold text-white">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <BarChart3 className="w-6 h-6 text-cyan-300 shrink-0" />
+          <span className="text-base font-semibold text-white break-words min-w-0">
             Carrying Capacity
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {overTourism ? (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-300/30 tabular-nums">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-300/30 tabular-nums whitespace-nowrap">
               ⚠ {overflowPct}% over
             </span>
           ) : (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-300/30 tabular-nums">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-300/30 tabular-nums whitespace-nowrap">
               ✓ {headroomPct}% headroom
             </span>
           )}
@@ -151,9 +151,9 @@ export default function CarryingCapacityCalculator({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-5 pb-5 space-y-5 text-white">
+          <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-5 text-white">
             {/* Site label + AI estimate button */}
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-[10px] tracking-[0.15em] uppercase text-white/55">
                   Focal site
@@ -191,7 +191,7 @@ export default function CarryingCapacityCalculator({
             )}
 
             {/* Inputs for the three formula variables */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <NumberField
                 label="A (m²)"
                 value={area}

@@ -13,10 +13,12 @@ export default function IssueCard({ issue, expanded, onToggle }: IssueCardProps)
       onClick={onToggle}
       className={`glass-card w-full text-left rounded-xl ${expanded ? 'is-active' : ''}`}
     >
-      <div className="flex items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{issue.icon}</span>
-          <span className="text-base font-semibold text-white">{issue.tag}</span>
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 sm:py-4">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <span className="text-2xl shrink-0">{issue.icon}</span>
+          <span className="text-base font-semibold text-white break-words min-w-0">
+            {issue.tag}
+          </span>
         </div>
         <ChevronDown
           className={`w-5 h-5 text-white/60 transition-transform duration-300 shrink-0 ${
@@ -30,7 +32,7 @@ export default function IssueCard({ issue, expanded, onToggle }: IssueCardProps)
         }`}
       >
         <div className="overflow-hidden">
-          <p className="text-sm text-white/85 leading-relaxed px-5 pb-5">
+          <p className="text-sm text-white/85 leading-relaxed px-4 sm:px-5 pb-4 sm:pb-5">
             {issue.detail}
           </p>
         </div>

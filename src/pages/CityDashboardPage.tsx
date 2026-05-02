@@ -86,33 +86,35 @@ export default function CityDashboardPage() {
           with the root font-size, the buttons would shift between clicks
           and the user couldn't tap +A repeatedly without re-aiming. */}
       <div
-        className={`relative z-10 flex items-center justify-between ${
+        className={`relative z-10 flex items-center justify-between px-[12px] sm:px-[24px] py-[10px] sm:py-[16px] ${
           previewMode ? 'hidden' : ''
         }`}
-        style={{ padding: '16px 24px' }}
       >
         <button
           onClick={() => navigate('/', { state: { fromCity: true } })}
           className="glass-button chrome-button text-white"
+          aria-label="Back to Globe"
         >
           <ArrowLeft size={16} />
-          <span>Back to Globe</span>
+          <span className="hidden sm:inline">Back to Globe</span>
         </button>
-        <div className="flex items-center" style={{ gap: 8 }}>
+        <div className="flex items-center gap-[6px] sm:gap-[8px]">
           <FontSizeControl />
           <button
             onClick={() => setPreviewMode(true)}
             className="glass-button chrome-button text-white"
+            aria-label="Preview"
           >
             <Maximize2 size={16} />
-            <span>Preview</span>
+            <span className="hidden sm:inline">Preview</span>
           </button>
           <button
             onClick={() => setShowBoard(true)}
             className="glass-button chrome-button text-white"
+            aria-label="Student Board"
           >
             <MessageSquare size={16} />
-            <span>Student Board</span>
+            <span className="hidden sm:inline">Student Board</span>
           </button>
         </div>
       </div>
@@ -122,7 +124,7 @@ export default function CityDashboardPage() {
           while opacity < 1, breaking the inner glass-card cards'
           backdrop-filter. Use display toggle instead. */}
       <div
-        className={`relative z-10 px-6 pb-6 h-[calc(100%-72px)] overflow-y-auto ${
+        className={`relative z-10 px-4 sm:px-6 pb-6 h-[calc(100%-72px)] overflow-y-auto ${
           previewMode ? 'hidden' : ''
         }`}
       >
@@ -130,8 +132,8 @@ export default function CityDashboardPage() {
           <p className="text-xs tracking-widest text-cyan-300 mb-1">
             {city.region.toUpperCase()}
           </p>
-          <h2 className="text-5xl font-light text-white">{city.name}</h2>
-          <p className="text-lg text-white/80 mt-1">{city.country}</p>
+          <h2 className="text-3xl sm:text-5xl font-light text-white">{city.name}</h2>
+          <p className="text-base sm:text-lg text-white/80 mt-1">{city.country}</p>
           <p className="text-sm text-white/70 mt-3 leading-relaxed">{city.intro}</p>
 
           {/* Overview card — rich multi-section context (features /

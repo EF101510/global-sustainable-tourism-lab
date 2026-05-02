@@ -274,9 +274,9 @@ export default function StudentBoard({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
-      <div className="glass-panel rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col text-white">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/15">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/50 backdrop-blur-sm">
+      <div className="glass-panel rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col text-white">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/15">
           <div>
             <h3 className="text-lg font-semibold text-white">
               💬 {city.name} · 24-Hour Smart Visitor Cap Plan
@@ -302,8 +302,8 @@ export default function StudentBoard({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-b border-white/15 bg-white/5">
-          <div className="flex gap-2 mb-2">
+        <div className="px-4 sm:px-6 py-4 border-b border-white/15 bg-white/5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
             <input
               value={nickname}
               onChange={(e) => setNickname(e.target.value.slice(0, MAX_NICKNAME))}
@@ -311,7 +311,7 @@ export default function StudentBoard({
               readOnly={identityLocked}
               aria-readonly={identityLocked}
               title={identityLocked ? 'Locked. Use "Change identity" to reset.' : undefined}
-              className={`w-32 text-sm rounded-lg px-3 py-2 border focus:outline-none placeholder:text-white/40 ${
+              className={`w-full sm:w-32 text-sm rounded-lg px-3 py-2 border focus:outline-none placeholder:text-white/40 ${
                 identityLocked
                   ? 'border-white/15 bg-white/5 text-white/60 cursor-not-allowed'
                   : 'border-white/20 bg-white/5 text-white focus:border-cyan-300'
@@ -324,13 +324,13 @@ export default function StudentBoard({
               readOnly={identityLocked}
               aria-readonly={identityLocked}
               title={identityLocked ? 'Locked. Use "Change identity" to reset.' : undefined}
-              className={`w-40 text-sm rounded-lg px-3 py-2 border focus:outline-none placeholder:text-white/40 ${
+              className={`w-full sm:w-40 text-sm rounded-lg px-3 py-2 border focus:outline-none placeholder:text-white/40 ${
                 identityLocked
                   ? 'border-white/15 bg-white/5 text-white/60 cursor-not-allowed'
                   : 'border-white/20 bg-white/5 text-white focus:border-cyan-300'
               }`}
             />
-            <span className="text-xs text-white/50 self-center ml-auto">
+            <span className="text-xs text-white/50 self-end sm:self-center sm:ml-auto">
               {content.length}/{MAX_CONTENT}
             </span>
           </div>
@@ -376,7 +376,7 @@ export default function StudentBoard({
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
           {loading && <p className="text-sm text-white/50 text-center">Loading...</p>}
           {!loading && posts.length === 0 && !error && (
             <p className="text-sm text-white/50 text-center py-8">

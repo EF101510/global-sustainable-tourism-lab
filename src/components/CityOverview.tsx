@@ -39,14 +39,16 @@ export default function CityOverview({ city, expanded, onToggle }: CityOverviewP
     <div className={`glass-card rounded-xl ${expanded ? 'is-active' : ''}`}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 text-left"
+        className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3 sm:py-4 text-left"
       >
-        <div className="flex items-center gap-3">
-          <BookOpen className="w-6 h-6 text-cyan-300" />
-          <span className="text-base font-semibold text-white">Overview</span>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <BookOpen className="w-6 h-6 text-cyan-300 shrink-0" />
+          <span className="text-base font-semibold text-white break-words min-w-0">
+            Overview
+          </span>
         </div>
         <ChevronDown
-          className={`w-5 h-5 text-white/60 transition-transform duration-300 ${
+          className={`w-5 h-5 text-white/60 transition-transform duration-300 shrink-0 ${
             expanded ? 'rotate-180' : ''
           }`}
         />
@@ -58,7 +60,7 @@ export default function CityOverview({ city, expanded, onToggle }: CityOverviewP
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-5 pb-5 space-y-4 text-white">
+          <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-4 text-white">
             {SECTIONS.map(({ key, label, Icon }) => (
               <section key={key} className="space-y-1.5">
                 <div className="flex items-center gap-2">

@@ -62,15 +62,23 @@ body,
      of Tailwind's rem-based `px-4 py-2 text-sm gap-2`) because the global
      font-scale is driven from inside this same chrome row — if the
      buttons themselves scaled, every click would reflow the row and move
-     the cursor off the +A button between clicks. */
+     the cursor off the +A button between clicks. The breakpoint at 640px
+     (Tailwind `sm`) bumps to roomier desktop sizing. */
   .chrome-button {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: 6px;
+    padding: 6px 10px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.25;
+  }
+  @media (min-width: 640px) {
+    .chrome-button {
+      gap: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
   }
 }
 
