@@ -41,6 +41,11 @@ export default function Globe({
 }: GlobeProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [zoomingIn, setZoomingIn] = useState(false);
+  // Tracks whether `upgradeWithTopoJSON` has finished. Until then, the
+  // globe is just a smooth blue sphere with no continents. We surface a
+  // small "Loading coastlines…" chip while we wait so the screen doesn't
+  // look broken on slow networks or first paint.
+  const [upgraded, setUpgraded] = useState(false);
 
   // Live mirror of `rotationPaused` for the animation-loop closure. Updated
   // every render so the loop sees the latest value without us re-running
@@ -77,8 +82,13 @@ export default function Globe({
     const globe = new THREE.Mesh(globeGeometry, globeMaterial);
     scene.add(globe);
 
-    // Async upgrade to higher-fidelity coastlines; failures keep procedural fallback.
-    void upgradeWithTopoJSON(globeMaterial);
+    // Async upgrade to higher-fidelity coastlines; failures keep procedural
+    // fallback. We flip `upgraded` either way so the loading chip clears —
+    // a stuck-open chip would be more confusing than a blue-only globe.
+    let cancelled = false;
+    upgradeWithTopoJSON(globeMaterial).finally(() => {
+      if (!cancelled) setUpgraded(true);
+    });
 
     // Lat/lng grid
     const gridGroup = new THREE.Group();
@@ -393,6 +403,7 @@ export default function Globe({
     window.addEventListener("resize", onResize);
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("mouseup", onMouseUp);
@@ -418,13 +429,36 @@ export default function Globe({
   }, [onCitySelect, onHoverChange, onZoomingChange]);
 
   return (
-    <div
-      ref={mountRef}
-      className="w-full h-full transition-all duration-700 ease-out"
-      style={{
-        cursor: "grab",
-        filter: zoomingIn ? "blur(20px) brightness(0.4)" : "none",
-      }}
-    />
+    <div className="relative w-full h-full">
+      <div
+        ref={mountRef}
+        className="w-full h-full transition-all duration-700 ease-out"
+        style={{
+          cursor: "grab",
+          filter: zoomingIn ? "blur(20px) brightness(0.4)" : "none",
+        }}
+      />
+
+      {/* "Loading coastlines…" chip — shown while `upgradeWithTopoJSON`
+          is in flight (typically ~200–600 ms). Fades out smoothly when
+          the texture swap completes (or fails — failure leaves the blue
+          sphere, but we still clear the chip so the UI doesn't hang).
+          Positioned high enough to clear the bottom "DRAG TO ROTATE" hint
+          but low enough not to fight the page header. */}
+      <div
+        className={`absolute left-1/2 -translate-x-1/2 bottom-20 sm:bottom-24 pointer-events-none transition-opacity duration-500 ${
+          upgraded || zoomingIn ? "opacity-0" : "opacity-100"
+        }`}
+        aria-live="polite"
+      >
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-white/50 text-blue-700/85 text-xs shadow-[0_4px_14px_-4px_rgba(30,58,138,0.25)]">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-70 animate-ping" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+          </span>
+          <span>Loading coastlines…</span>
+        </div>
+      </div>
+    </div>
   );
 }
