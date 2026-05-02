@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowUpRight, Globe2 } from 'lucide-react';
+import { ArrowUpRight, Globe2, Pause, Play } from 'lucide-react';
 import Globe, { type GlobeHoverState } from '../components/Globe';
 import { CITIES } from '../data/cities';
 import { getFlagUrl } from '../lib/country-flags';
@@ -21,6 +21,7 @@ export default function GlobePage() {
   const location = useLocation();
   const [hover, setHover] = useState<GlobeHoverState>({ city: null, x: 0, y: 0 });
   const [zoomingIn, setZoomingIn] = useState(false);
+  const [rotationPaused, setRotationPaused] = useState(false);
 
   // Captured once at mount: did we arrive here via the dashboard's Back button?
   const [initialCameraZ] = useState<number | undefined>(() =>
@@ -88,6 +89,7 @@ export default function GlobePage() {
         onHoverChange={handleHoverChange}
         onZoomingChange={setZoomingIn}
         initialCameraZ={initialCameraZ}
+        rotationPaused={rotationPaused}
       />
 
       {/* Header */}
@@ -125,6 +127,25 @@ export default function GlobePage() {
           DRAG TO ROTATE · SCROLL TO ZOOM · CLICK A POINT
         </p>
       </div>
+
+      {/* Pause / resume the auto-spin. Bottom-right floating glass button.
+          Hidden during zoom-in so it doesn't sit over the black overlay. */}
+      <button
+        onClick={() => setRotationPaused((p) => !p)}
+        aria-label={rotationPaused ? 'Resume rotation' : 'Pause rotation'}
+        className={`absolute bottom-5 right-5 z-30 flex items-center gap-2 px-3 py-2 rounded-full bg-white/70 hover:bg-white/85 backdrop-blur-md border border-white/60 text-blue-700 shadow-[0_8px_20px_-8px_rgba(30,58,138,0.35)] transition ${
+          zoomingIn ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
+        {rotationPaused ? (
+          <Play className="w-4 h-4" fill="currentColor" />
+        ) : (
+          <Pause className="w-4 h-4" fill="currentColor" />
+        )}
+        <span className="text-xs font-medium">
+          {rotationPaused ? 'Resume' : 'Pause'}
+        </span>
+      </button>
 
       {/* Hover intro card — frosted glass */}
       {hoveredCity && !zoomingIn && (

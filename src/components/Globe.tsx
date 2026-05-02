@@ -22,6 +22,10 @@ interface GlobeProps {
    *  (8), the camera animates outward over 600ms — used for a "zoom out"
    *  transition when arriving back from a city dashboard. */
   initialCameraZ?: number;
+  /** When true, the auto-spin in the animation loop is suppressed (the
+   *  user can still drag to rotate manually). Read live via a ref so
+   *  toggling does not require restarting the Three.js setup. */
+  rotationPaused?: boolean;
 }
 
 /**
@@ -33,9 +37,18 @@ export default function Globe({
   onHoverChange,
   onZoomingChange,
   initialCameraZ,
+  rotationPaused = false,
 }: GlobeProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [zoomingIn, setZoomingIn] = useState(false);
+
+  // Live mirror of `rotationPaused` for the animation-loop closure. Updated
+  // every render so the loop sees the latest value without us re-running
+  // the whole Three.js setup effect.
+  const rotationPausedRef = useRef(rotationPaused);
+  useEffect(() => {
+    rotationPausedRef.current = rotationPaused;
+  }, [rotationPaused]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -328,7 +341,11 @@ export default function Globe({
       if (!isDragging) {
         rotVelY *= 0.95;
         rotVelX *= 0.95;
-        if (!currentHoveredCity && !zoomAnimating && camera.position.z > 5.05) {
+        if (
+          !currentHoveredCity &&
+          !zoomAnimating &&
+          !rotationPausedRef.current
+        ) {
           targetRotation.y += 0.0008;
         }
       }
