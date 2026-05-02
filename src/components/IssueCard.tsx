@@ -11,11 +11,7 @@ export default function IssueCard({ issue, expanded, onToggle }: IssueCardProps)
   return (
     <button
       onClick={onToggle}
-      className={`w-full text-left rounded-xl border backdrop-blur-md transition-colors ${
-        expanded
-          ? 'bg-white/20 border-cyan-300/50'
-          : 'bg-white/10 hover:bg-white/15 border-white/15'
-      }`}
+      className={`glass-card w-full text-left rounded-xl ${expanded ? 'is-active' : ''}`}
     >
       <div className="flex items-center justify-between px-4 py-3.5">
         <div className="flex items-center gap-3">

@@ -274,14 +274,14 @@ export default function StudentBoard({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+      <div className="glass-panel rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col text-white">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/15">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-white">
               💬 {city.name} · 24-Hour Smart Visitor Cap Plan
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-white/60 mt-0.5">
               Share your solution · Visible to students worldwide
             </p>
           </div>
@@ -290,19 +290,19 @@ export default function StudentBoard({
               onClick={refresh}
               disabled={loading}
               aria-label="Refresh posts"
-              className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50"
+              className="p-2 hover:bg-white/15 rounded-lg disabled:opacity-50"
             >
               <RefreshCw
-                className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`}
+                className={`w-4 h-4 text-white/70 ${loading ? 'animate-spin' : ''}`}
               />
             </button>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-              <X className="w-5 h-5 text-gray-500" />
+            <button onClick={onClose} className="p-2 hover:bg-white/15 rounded-lg">
+              <X className="w-5 h-5 text-white/70" />
             </button>
           </div>
         </div>
 
-        <div className="px-6 py-4 border-b bg-blue-50/50">
+        <div className="px-6 py-4 border-b border-white/15 bg-white/5">
           <div className="flex gap-2 mb-2">
             <input
               value={nickname}
@@ -311,10 +311,10 @@ export default function StudentBoard({
               readOnly={identityLocked}
               aria-readonly={identityLocked}
               title={identityLocked ? 'Locked. Use "Change identity" to reset.' : undefined}
-              className={`w-32 text-sm rounded-lg px-3 py-2 border focus:outline-none ${
+              className={`w-32 text-sm rounded-lg px-3 py-2 border focus:outline-none placeholder:text-white/40 ${
                 identityLocked
-                  ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-not-allowed'
-                  : 'border-gray-200 focus:border-blue-400'
+                  ? 'border-white/15 bg-white/5 text-white/60 cursor-not-allowed'
+                  : 'border-white/20 bg-white/5 text-white focus:border-cyan-300'
               }`}
             />
             <input
@@ -324,25 +324,25 @@ export default function StudentBoard({
               readOnly={identityLocked}
               aria-readonly={identityLocked}
               title={identityLocked ? 'Locked. Use "Change identity" to reset.' : undefined}
-              className={`w-40 text-sm rounded-lg px-3 py-2 border focus:outline-none ${
+              className={`w-40 text-sm rounded-lg px-3 py-2 border focus:outline-none placeholder:text-white/40 ${
                 identityLocked
-                  ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-not-allowed'
-                  : 'border-gray-200 focus:border-blue-400'
+                  ? 'border-white/15 bg-white/5 text-white/60 cursor-not-allowed'
+                  : 'border-white/20 bg-white/5 text-white focus:border-cyan-300'
               }`}
             />
-            <span className="text-xs text-gray-400 self-center ml-auto">
+            <span className="text-xs text-white/50 self-center ml-auto">
               {content.length}/{MAX_CONTENT}
             </span>
           </div>
           {identityLocked && (
-            <p className="text-[11px] text-gray-500 -mt-1 mb-2">
-              Posting as <span className="font-medium">{identity?.nickname}</span>
+            <p className="text-[11px] text-white/60 -mt-1 mb-2">
+              Posting as <span className="font-medium text-white/80">{identity?.nickname}</span>
               {' · '}
               {identity?.studentClass}
               {' · '}
               <button
                 onClick={() => setConfirmReset(true)}
-                className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+                className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2"
               >
                 Change identity
               </button>
@@ -352,7 +352,7 @@ export default function StudentBoard({
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, MAX_CONTENT))}
             placeholder="Example: 7-10 AM resident-priority entry; afternoon visitor cap of 4,000..."
-            className="w-full text-sm rounded-lg px-3 py-2 border border-gray-200 focus:outline-none focus:border-blue-400 resize-none"
+            className="w-full text-sm rounded-lg px-3 py-2 border border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:border-cyan-300 resize-none"
             rows={3}
           />
           <div className="flex justify-end mt-2">
@@ -364,22 +364,22 @@ export default function StudentBoard({
                 !studentClass.trim() ||
                 !content.trim()
               }
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm px-4 py-2 rounded-lg transition"
+              className="bg-cyan-500 hover:bg-cyan-400 disabled:bg-white/10 disabled:text-white/40 text-white text-sm px-4 py-2 rounded-lg transition"
             >
               {submitting ? 'Submitting...' : 'Submit suggestion'}
             </button>
           </div>
           {error && (
-            <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-md px-2 py-1">
+            <p className="mt-2 text-xs text-rose-200 bg-rose-500/15 border border-rose-300/30 rounded-md px-2 py-1">
               ⚠️ {error}
             </p>
           )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-3">
-          {loading && <p className="text-sm text-gray-400 text-center">Loading...</p>}
+          {loading && <p className="text-sm text-white/50 text-center">Loading...</p>}
           {!loading && posts.length === 0 && !error && (
-            <p className="text-sm text-gray-400 text-center py-8">
+            <p className="text-sm text-white/50 text-center py-8">
               No posts yet — be the first to share a solution!
             </p>
           )}
@@ -469,29 +469,29 @@ function PostRow({
 
   return (
     <>
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+      <div className="bg-white/5 rounded-lg p-4 border border-white/10">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-baseline gap-2">
-            <span className="text-sm font-semibold text-gray-700">{post.nickname}</span>
+            <span className="text-sm font-semibold text-white">{post.nickname}</span>
             {post.studentClass && (
-              <span className="text-xs text-gray-500">· {post.studentClass}</span>
+              <span className="text-xs text-white/60">· {post.studentClass}</span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">{formatTime(post.time)}</span>
+            <span className="text-xs text-white/50">{formatTime(post.time)}</span>
             {canManage && (
               <>
                 <button
                   onClick={onEdit}
                   aria-label="Edit post"
-                  className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition"
+                  className="p-1 rounded hover:bg-white/15 text-white/60 hover:text-white transition"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setConfirmDelete(true)}
                   aria-label="Delete post"
-                  className="p-1 rounded hover:bg-rose-100 text-gray-500 hover:text-rose-600 transition"
+                  className="p-1 rounded hover:bg-rose-500/20 text-white/60 hover:text-rose-300 transition"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -499,11 +499,11 @@ function PostRow({
             )}
           </div>
         </div>
-        <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
+        <p className="text-sm text-white/85 whitespace-pre-wrap leading-relaxed">
           {post.content}
         </p>
         {err && (
-          <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-md px-2 py-1">
+          <p className="mt-2 text-xs text-rose-200 bg-rose-500/15 border border-rose-300/30 rounded-md px-2 py-1">
             ⚠️ {err}
           </p>
         )}
@@ -563,41 +563,41 @@ function EditPostRow({
   };
 
   return (
-    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+    <div className="bg-cyan-500/15 rounded-lg p-4 border border-cyan-300/30">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-gray-700">{post.nickname}</span>
+          <span className="text-sm font-semibold text-white">{post.nickname}</span>
           {post.studentClass && (
-            <span className="text-xs text-gray-500">· {post.studentClass}</span>
+            <span className="text-xs text-white/60">· {post.studentClass}</span>
           )}
         </div>
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-white/50">
           {content.length}/{MAX_CONTENT}
         </span>
       </div>
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value.slice(0, MAX_CONTENT))}
-        className="w-full text-sm rounded-lg px-3 py-2 border border-gray-200 focus:outline-none focus:border-blue-400 resize-none bg-white"
+        className="w-full text-sm rounded-lg px-3 py-2 border border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:border-cyan-300 resize-none"
         rows={3}
       />
       <div className="flex items-center justify-end gap-2 mt-2">
         <button
           onClick={onCancel}
-          className="text-sm text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition"
+          className="text-sm text-white/70 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/15 transition"
         >
           Cancel
         </button>
         <button
           onClick={save}
           disabled={saving || !dirty || !content.trim()}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm px-4 py-1.5 rounded-lg transition"
+          className="bg-cyan-500 hover:bg-cyan-400 disabled:bg-white/10 disabled:text-white/40 text-white text-sm px-4 py-1.5 rounded-lg transition"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
       </div>
       {err && (
-        <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-md px-2 py-1">
+        <p className="mt-2 text-xs text-rose-200 bg-rose-500/15 border border-rose-300/30 rounded-md px-2 py-1">
           ⚠️ {err}
         </p>
       )}
@@ -620,25 +620,25 @@ function ConfirmDialog({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[55] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[55] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm"
       onClick={onCancel}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"
+        className="glass-panel rounded-xl shadow-2xl w-full max-w-md p-6 text-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <h4 className="text-base font-semibold text-gray-900">{title}</h4>
-        <p className="mt-2 text-sm text-gray-600 leading-relaxed">{body}</p>
+        <h4 className="text-base font-semibold text-white">{title}</h4>
+        <p className="mt-2 text-sm text-white/80 leading-relaxed">{body}</p>
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onCancel}
-            className="text-sm text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"
+            className="text-sm text-white/70 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/15 transition"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="bg-rose-600 hover:bg-rose-700 text-white text-sm px-4 py-1.5 rounded-lg transition"
+            className="bg-rose-500 hover:bg-rose-400 text-white text-sm px-4 py-1.5 rounded-lg transition"
           >
             {confirmLabel}
           </button>

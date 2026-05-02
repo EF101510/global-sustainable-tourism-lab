@@ -75,18 +75,17 @@ export default function CityDashboardPage() {
       />
 
       {/* Top bar — fades out in preview mode so only the photo is visible.
-          `translateZ(0)` + `will-change: opacity` keep this on its own GPU
-          layer so the inner backdrop-blur buttons don't re-rasterise when
-          opacity transitions (which used to cause a one-frame flash). */}
+          NB: do NOT add transform/will-change here — they create a new
+          stacking context that prevents the inner backdrop-blur buttons
+          from seeing (and blurring) the carousel photo underneath. */}
       <div
         className={`relative z-10 flex items-center justify-between px-6 py-4 transition-opacity duration-500 ${
           previewMode ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
-        style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
       >
         <button
           onClick={() => navigate('/', { state: { fromCity: true } })}
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
+          className="glass-button flex items-center gap-2 px-4 py-2 rounded-lg text-white"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back to Globe</span>
@@ -95,14 +94,14 @@ export default function CityDashboardPage() {
           <FontSizeControl />
           <button
             onClick={() => setPreviewMode(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
+            className="glass-button flex items-center gap-2 px-4 py-2 rounded-lg text-white"
           >
             <Maximize2 className="w-4 h-4" />
             <span className="text-sm">Preview</span>
           </button>
           <button
             onClick={() => setShowBoard(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-md rounded-lg text-white border border-white/20 transition"
+            className="glass-button flex items-center gap-2 px-4 py-2 rounded-lg text-white"
           >
             <MessageSquare className="w-4 h-4" />
             <span className="text-sm">Student Board</span>
@@ -110,13 +109,15 @@ export default function CityDashboardPage() {
         </div>
       </div>
 
-      {/* Main content — fades out in preview mode. Same GPU-layer hint as
-          the top bar so the backdrop-blur cards inside transition cleanly. */}
+      {/* Main content — fades out in preview mode. NB: no transform /
+          will-change here — they would create a stacking context that
+          breaks the backdrop-blur of the cards inside (the cards need to
+          "see through" to the carousel photo, which sits outside this
+          wrapper). */}
       <div
         className={`relative z-10 px-6 pb-6 h-[calc(100%-72px)] overflow-y-auto transition-opacity duration-500 ${
           previewMode ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
-        style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
       >
         <div className="max-w-2xl">
           <p className="text-xs tracking-widest text-cyan-300 mb-1">
@@ -182,7 +183,7 @@ export default function CityDashboardPage() {
       <button
         onClick={() => setPreviewMode(false)}
         aria-label="Exit preview"
-        className={`fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 transition ${
+        className={`glass-button fixed top-4 right-4 z-30 flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-opacity duration-300 ${
           previewMode ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >

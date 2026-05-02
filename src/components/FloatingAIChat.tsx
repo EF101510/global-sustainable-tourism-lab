@@ -42,15 +42,16 @@ export default function FloatingAIChat({ city, hidden = false }: FloatingAIChatP
         <span className="text-sm font-medium">Ask AI</span>
       </button>
 
-      {/* Expanded panel */}
+      {/* Expanded panel — opacity-only fade. We deliberately do NOT animate
+          `transform`/`scale` here: a non-identity transform on the wrapper
+          establishes a new stacking context, which would prevent the
+          inner glass-panel's `backdrop-filter` from seeing (and blurring)
+          the dashboard photo behind it. */}
       <div
-        style={{ willChange: 'opacity, transform' }}
-        className={`fixed bottom-6 right-6 z-40 origin-bottom-right transition-all duration-300 ease-out w-[560px] max-w-[calc(100vw-3rem)] h-[760px] max-h-[90vh] ${
-          hidden
-            ? 'opacity-0 scale-100 pointer-events-none'
-            : open
-            ? 'opacity-100 scale-100'
-            : 'opacity-0 scale-90 pointer-events-none'
+        className={`fixed bottom-6 right-6 z-40 transition-opacity duration-300 ease-out w-[560px] max-w-[calc(100vw-3rem)] h-[760px] max-h-[90vh] ${
+          hidden || !open
+            ? 'opacity-0 pointer-events-none'
+            : 'opacity-100'
         }`}
       >
         <div className="relative w-full h-full">

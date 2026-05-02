@@ -11,6 +11,53 @@ body,
     'PingFang TC', 'Microsoft JhengHei', sans-serif;
 }
 
+/* Shared frosted-glass utilities. All cards and panels in the city
+   dashboard pull from these so the material stays consistent and any
+   future tweak only touches one place.
+   IMPORTANT: do NOT wrap any of these elements in a parent that has
+   `transform`, `filter`, or `will-change: transform/filter` — those
+   create a new stacking context and the backdrop-filter inside will
+   stop seeing the page's photo background. */
+@layer components {
+  /* Light frost for collapsible cards (IssueCard / CityOverview /
+     CarryingCapacity). Toggle the `.is-active` modifier when expanded. */
+  .glass-card {
+    background-color: rgb(255 255 255 / 0.10);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgb(255 255 255 / 0.15);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .glass-card:hover {
+    background-color: rgb(255 255 255 / 0.15);
+  }
+  .glass-card.is-active {
+    background-color: rgb(255 255 255 / 0.20);
+    border-color: rgb(103 232 249 / 0.50); /* cyan-300/50 */
+  }
+  /* Stronger frost for full panels (AI Chat, Student Board modal). */
+  .glass-panel {
+    background-color: rgb(255 255 255 / 0.10);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgb(255 255 255 / 0.20);
+  }
+  /* Light-frost button used across the dashboard chrome (Back to Globe,
+     Preview, Exit Preview, Student Board, FontSizeControl). */
+  .glass-button {
+    background-color: rgb(255 255 255 / 0.10);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgb(255 255 255 / 0.20);
+    transition: background-color 0.15s ease;
+  }
+  .glass-button:hover {
+    background-color: rgb(255 255 255 / 0.20);
+  }
+}
+
 /* macOS-style Ken Burns: slow zoom + subtle pan, three direction variants
    so successive images feel organic rather than mechanical. */
 @keyframes kenburns-a {

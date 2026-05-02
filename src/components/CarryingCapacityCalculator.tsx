@@ -113,13 +113,7 @@ export default function CarryingCapacityCalculator({
   const actualBarPct = (actual / maxValue) * 100;
 
   return (
-    <div
-      className={`rounded-xl border backdrop-blur-md transition-colors ${
-        expanded
-          ? 'bg-white/20 border-cyan-300/50'
-          : 'bg-white/10 hover:bg-white/15 border-white/15'
-      }`}
-    >
+    <div className={`glass-card rounded-xl ${expanded ? 'is-active' : ''}`}>
       {/* Collapsible header — sibling (not parent) of body so inner buttons
           don't get nested inside this <button> element. */}
       <button
