@@ -125,7 +125,7 @@ export default function AIChat({ city }: { city: City }) {
         <h3 className="text-sm font-semibold text-white">AI Sustainability Diagnosis</h3>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3">
         {messages.length === 0 && (
           <div className="space-y-2">
             <p className="text-sm text-white/70 mb-3">Pick a question to start, or ask your own:</p>
@@ -184,7 +184,7 @@ export default function AIChat({ city }: { city: City }) {
         )}
       </div>
 
-      <div className="p-3 border-t border-white/20">
+      <div className="p-3 border-t border-white/20 safe-bottom">
         <div className="flex gap-2">
           <input
             value={input}

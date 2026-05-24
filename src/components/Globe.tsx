@@ -230,86 +230,96 @@ export default function Globe({
       animateZoomOut();
     }
 
-    const onMouseDown = (e: MouseEvent) => {
-      isDragging = true;
-      prevX = e.clientX;
-      prevY = e.clientY;
-    };
-    const onMouseUp = () => {
-      isDragging = false;
-    };
+    // --- Pointer controls (mouse + touch + pen via Pointer Events) -------
+    // Active pointers keyed by pointerId — drives single-finger drag and
+    // two-finger pinch-zoom. Touch input is implicitly captured to the
+    // canvas on pointerdown, so window-level move/up still fire while a
+    // finger or the cursor strays outside the canvas.
+    const activePointers = new Map<number, { x: number; y: number }>();
+    let pinchPrevDist = 0;
+    let wasPinching = false;
+    // Tap detection: a pointer that goes down and up near the same spot
+    // (no significant drag) is a tap/select rather than a rotate gesture.
+    let downX = 0;
+    let downY = 0;
+    let movedFar = false;
+    const TAP_MOVE_THRESHOLD = 6; // CSS px
+    // Screen-space pick radii (CSS px). Touch is more forgiving for fingers;
+    // mouse/pen is tighter since the cursor is precise. Tune to taste.
+    const TOUCH_PICK_RADIUS = 32;
+    const MOUSE_PICK_RADIUS = 22;
+    // Touch has no hover, so selection is two-step: the first tap on a
+    // marker previews it (shows the card); a second tap on the SAME marker
+    // confirms and zooms in. Mouse/pen keep the hover + single-click model.
+    let touchPreviewCity: City | null = null;
 
-    const onMouseMove = (e: MouseEvent) => {
+    const ptrDist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+      Math.hypot(a.x - b.x, a.y - b.y);
+
+    /** Raycast at a client position; return the front-facing city mesh or
+     *  null (markers on the far side of the globe are rejected). */
+    const pickCity = (
+      clientX: number,
+      clientY: number,
+    ): THREE.Object3D | null => {
       const rect = renderer.domElement.getBoundingClientRect();
-      if (isDragging) {
-        const dx = e.clientX - prevX;
-        const dy = e.clientY - prevY;
-        rotVelY = dx * 0.005;
-        rotVelX = dy * 0.005;
-        targetRotation.y += rotVelY;
-        targetRotation.x += rotVelX;
-        targetRotation.x = Math.max(
-          -Math.PI / 2.2,
-          Math.min(Math.PI / 2.2, targetRotation.x),
-        );
-        prevX = e.clientX;
-        prevY = e.clientY;
-      }
-
-      const mouseNDC = new THREE.Vector2(
-        ((e.clientX - rect.left) / rect.width) * 2 - 1,
-        -((e.clientY - rect.top) / rect.height) * 2 + 1,
+      const ndc = new THREE.Vector2(
+        ((clientX - rect.left) / rect.width) * 2 - 1,
+        -((clientY - rect.top) / rect.height) * 2 + 1,
       );
       const raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(mouseNDC, camera);
-      const intersects = raycaster.intersectObjects(cityMeshes);
-      if (intersects.length > 0) {
-        const target = intersects[0].object;
-        const cityPos = target.getWorldPosition(new THREE.Vector3());
-        const camDir = new THREE.Vector3()
-          .subVectors(camera.position, new THREE.Vector3(0, 0, 0))
-          .normalize();
-        const cityDir = cityPos.clone().normalize();
-        if (cityDir.dot(camDir) > 0) {
-          currentHoveredCity = target.userData.city as City;
-          onHoverChange?.({
-            city: currentHoveredCity,
-            x: e.clientX,
-            y: e.clientY,
-          });
-          renderer.domElement.style.cursor = "pointer";
-          return;
-        }
-      }
-      currentHoveredCity = null;
-      onHoverChange?.({ city: null, x: e.clientX, y: e.clientY });
-      renderer.domElement.style.cursor = isDragging ? "grabbing" : "grab";
-    };
-
-    const onClick = (e: MouseEvent) => {
-      if (zoomAnimating) return;
-      const rect = renderer.domElement.getBoundingClientRect();
-      const mouseNDC = new THREE.Vector2(
-        ((e.clientX - rect.left) / rect.width) * 2 - 1,
-        -((e.clientY - rect.top) / rect.height) * 2 + 1,
-      );
-      const raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(mouseNDC, camera);
-      const intersects = raycaster.intersectObjects(cityMeshes);
-      if (intersects.length === 0) return;
-      const target = intersects[0].object;
+      raycaster.setFromCamera(ndc, camera);
+      const hits = raycaster.intersectObjects(cityMeshes);
+      if (hits.length === 0) return null;
+      const target = hits[0].object;
       const cityPos = target.getWorldPosition(new THREE.Vector3());
       const camDir = new THREE.Vector3()
         .subVectors(camera.position, new THREE.Vector3(0, 0, 0))
         .normalize();
-      const cityDir = cityPos.clone().normalize();
-      if (cityDir.dot(camDir) <= 0) return;
+      if (cityPos.clone().normalize().dot(camDir) <= 0) return null;
+      return target;
+    };
 
+    /** Nearest front-facing marker within `radiusPx` (screen space) of a
+     *  point. Used for touch taps so a fat finger — and clusters of cities
+     *  that sit close together — still resolve to the closest marker rather
+     *  than needing a pixel-perfect hit on the tiny dot. */
+    const pickCityNear = (
+      clientX: number,
+      clientY: number,
+      radiusPx: number,
+    ): THREE.Object3D | null => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const camDir = new THREE.Vector3()
+        .subVectors(camera.position, new THREE.Vector3(0, 0, 0))
+        .normalize();
+      const v = new THREE.Vector3();
+      let best: THREE.Object3D | null = null;
+      let bestDist = radiusPx;
+      for (const dot of cityMeshes) {
+        dot.getWorldPosition(v);
+        if (v.clone().normalize().dot(camDir) <= 0) continue; // far side
+        v.project(camera); // → NDC (mutates v)
+        const sx = rect.left + (v.x * 0.5 + 0.5) * rect.width;
+        const sy = rect.top + (-v.y * 0.5 + 0.5) * rect.height;
+        const d = Math.hypot(sx - clientX, sy - clientY);
+        if (d < bestDist) {
+          bestDist = d;
+          best = dot;
+        }
+      }
+      return best;
+    };
+
+    /** 600ms easeOutCubic zoom-in, then notify the parent of the selection. */
+    const zoomToCity = (target: THREE.Object3D, x: number, y: number) => {
+      if (zoomAnimating) return;
       zoomAnimating = true;
       setZoomingIn(true);
       onZoomingChange?.(true);
       currentHoveredCity = null;
-      onHoverChange?.({ city: null, x: e.clientX, y: e.clientY });
+      touchPreviewCity = null;
+      onHoverChange?.({ city: null, x, y });
 
       const startZ = camera.position.z;
       const targetZ = 3.5;
@@ -328,6 +338,139 @@ export default function Globe({
       animateZoom();
     };
 
+    const onPointerDown = (e: PointerEvent) => {
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePointers.size === 1) {
+        isDragging = true;
+        wasPinching = false;
+        movedFar = false;
+        prevX = e.clientX;
+        prevY = e.clientY;
+        downX = e.clientX;
+        downY = e.clientY;
+      } else if (activePointers.size === 2) {
+        // Second finger down → switch from drag to pinch.
+        isDragging = false;
+        wasPinching = true;
+        const pts = [...activePointers.values()];
+        pinchPrevDist = ptrDist(pts[0], pts[1]);
+      }
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (activePointers.has(e.pointerId)) {
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+
+      // Pinch-zoom takes over whenever two pointers are down.
+      if (activePointers.size >= 2) {
+        const pts = [...activePointers.values()];
+        const d = ptrDist(pts[0], pts[1]);
+        if (pinchPrevDist > 0) {
+          // Pinch out (distance grows) → camera moves closer (smaller z).
+          camera.position.z -= (d - pinchPrevDist) * 0.01;
+          camera.position.z = Math.max(4, Math.min(15, camera.position.z));
+        }
+        pinchPrevDist = d;
+        return;
+      }
+
+      if (isDragging) {
+        const dx = e.clientX - prevX;
+        const dy = e.clientY - prevY;
+        rotVelY = dx * 0.005;
+        rotVelX = dy * 0.005;
+        targetRotation.y += rotVelY;
+        targetRotation.x += rotVelX;
+        targetRotation.x = Math.max(
+          -Math.PI / 2.2,
+          Math.min(Math.PI / 2.2, targetRotation.x),
+        );
+        prevX = e.clientX;
+        prevY = e.clientY;
+        if (
+          Math.hypot(e.clientX - downX, e.clientY - downY) > TAP_MOVE_THRESHOLD
+        ) {
+          movedFar = true;
+        }
+      }
+
+      // Hover preview is a mouse/pen affordance only — touch uses tap.
+      if (e.pointerType !== "touch") {
+        const target = pickCityNear(e.clientX, e.clientY, MOUSE_PICK_RADIUS);
+        if (target) {
+          currentHoveredCity = target.userData.city as City;
+          onHoverChange?.({
+            city: currentHoveredCity,
+            x: e.clientX,
+            y: e.clientY,
+          });
+          renderer.domElement.style.cursor = "pointer";
+        } else {
+          currentHoveredCity = null;
+          onHoverChange?.({ city: null, x: e.clientX, y: e.clientY });
+          renderer.domElement.style.cursor = isDragging ? "grabbing" : "grab";
+        }
+      }
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      const wasTap =
+        activePointers.size === 1 &&
+        !movedFar &&
+        !wasPinching &&
+        !zoomAnimating;
+      activePointers.delete(e.pointerId);
+
+      // One finger lifted from a pinch → resume single-finger drag cleanly
+      // from the remaining pointer so the globe doesn't jump.
+      if (activePointers.size === 1) {
+        const [p] = [...activePointers.values()];
+        prevX = p.x;
+        prevY = p.y;
+        isDragging = true;
+        return;
+      }
+      if (activePointers.size === 0) {
+        isDragging = false;
+        wasPinching = false;
+      }
+
+      if (!wasTap) return;
+
+      if (e.pointerType === "touch") {
+        // Fat-finger friendly: nearest marker within the touch radius wins.
+        const target = pickCityNear(e.clientX, e.clientY, TOUCH_PICK_RADIUS);
+        if (target) {
+          const city = target.userData.city as City;
+          if (touchPreviewCity && touchPreviewCity.id === city.id) {
+            zoomToCity(target, e.clientX, e.clientY); // second tap → confirm
+          } else {
+            touchPreviewCity = city; // first tap → preview the card
+            // Mark as hovered so the animation loop halts the auto-spin and
+            // highlights the marker while the card is showing.
+            currentHoveredCity = city;
+            onHoverChange?.({ city, x: e.clientX, y: e.clientY });
+          }
+        } else {
+          touchPreviewCity = null; // tap empty space → dismiss preview
+          currentHoveredCity = null; // …and let the globe resume spinning
+          onHoverChange?.({ city: null, x: e.clientX, y: e.clientY });
+        }
+      } else {
+        const target = pickCityNear(e.clientX, e.clientY, MOUSE_PICK_RADIUS);
+        if (target) zoomToCity(target, e.clientX, e.clientY); // mouse/pen click
+      }
+    };
+
+    const onPointerCancel = (e: PointerEvent) => {
+      activePointers.delete(e.pointerId);
+      if (activePointers.size === 0) {
+        isDragging = false;
+        wasPinching = false;
+      }
+    };
+
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       camera.position.z += e.deltaY * 0.005;
@@ -337,10 +480,13 @@ export default function Globe({
       camera.position.z = Math.max(4, Math.min(15, camera.position.z));
     };
 
-    renderer.domElement.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("mousemove", onMouseMove);
-    renderer.domElement.addEventListener("click", onClick);
+    // touch-action:none stops the browser from scrolling/zooming the page
+    // while the user is dragging or pinching the globe.
+    renderer.domElement.style.touchAction = "none";
+    renderer.domElement.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
     renderer.domElement.addEventListener("wheel", onWheel, { passive: false });
 
     // Animation loop
@@ -384,7 +530,7 @@ export default function Globe({
         dot.scale.y = dot.scale.x;
         dot.scale.z = dot.scale.x;
         (dot.material as THREE.MeshBasicMaterial).color.setHex(
-          isHov ? 0xffffff : 0xfbbf24,
+          isHov ? 0xef4444 : 0xfbbf24, // red-500 when selected, amber otherwise
         );
       });
 
@@ -406,10 +552,10 @@ export default function Globe({
       cancelled = true;
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", onResize);
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("mousemove", onMouseMove);
-      renderer.domElement.removeEventListener("mousedown", onMouseDown);
-      renderer.domElement.removeEventListener("click", onClick);
+      renderer.domElement.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
       renderer.domElement.removeEventListener("wheel", onWheel);
       mount.removeChild(renderer.domElement);
       renderer.dispose();

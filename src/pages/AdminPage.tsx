@@ -377,8 +377,8 @@ function Dashboard({
 
   return (
     <div className="min-h-screen w-full bg-slate-100">
-      <div className="max-w-6xl mx-auto p-6">
-        <header className="flex items-center justify-between mb-4">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h1 className="text-xl font-semibold text-gray-900">
               Student Board · Admin

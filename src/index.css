@@ -11,6 +11,33 @@ body,
     'PingFang TC', 'Microsoft JhengHei', sans-serif;
 }
 
+/* iOS zooms the whole page when a focused input's font-size is < 16px.
+   Many of our inputs use Tailwind `text-sm` (14px); bump them to 16px on
+   small screens so focusing a field doesn't yank the layout around. The
+   visual difference at desktop sizes is unaffected. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Safe-area helpers for notched phones (iPhone). `viewport-fit=cover` in
+   index.html lets content extend under the notch / home indicator; these
+   add just enough padding so fixed top/bottom chrome clears them. Applied
+   to the page header, bottom controls, and floating widgets. */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-pad-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
 /* Shared frosted-glass utilities. All cards and panels in the city
    dashboard pull from these so the material stays consistent and any
    future tweak only touches one place.

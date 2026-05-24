@@ -86,7 +86,7 @@ export default function CityDashboardPage() {
           with the root font-size, the buttons would shift between clicks
           and the user couldn't tap +A repeatedly without re-aiming. */}
       <div
-        className={`relative z-10 flex items-center justify-between px-[12px] sm:px-[24px] py-[10px] sm:py-[16px] ${
+        className={`safe-top safe-pad-x relative z-10 flex items-center justify-between px-[12px] sm:px-[24px] py-[10px] sm:py-[16px] ${
           previewMode ? 'hidden' : ''
         }`}
       >

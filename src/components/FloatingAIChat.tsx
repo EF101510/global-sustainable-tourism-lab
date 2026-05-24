@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChevronDown, Sparkles } from 'lucide-react';
 import AIChat from './AIChat';
 import type { City } from '../types';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface FloatingAIChatProps {
   city: City;
@@ -17,6 +18,17 @@ interface FloatingAIChatProps {
  */
 export default function FloatingAIChat({ city, hidden = false }: FloatingAIChatProps) {
   const [open, setOpen] = useState(false);
+
+  // On touch devices the open panel is effectively full-screen, so lock the
+  // page behind it to stop drags leaking through (iOS scroll chaining). On
+  // desktop the panel is a small floating window — leave page scroll alone.
+  const [isTouch] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches
+  );
+  useScrollLock(open && isTouch);
 
   // Auto-collapse when navigating to a different city.
   useEffect(() => {
@@ -51,7 +63,7 @@ export default function FloatingAIChat({ city, hidden = false }: FloatingAIChatP
           only when the animation finishes. Skipping the panel animation
           (the bubble still fades) avoids that visible re-frost. */}
       {!hidden && open && (
-        <div className="fixed bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-40 sm:w-[560px] sm:max-w-[calc(100vw-3rem)] h-[calc(100vh-1.5rem)] sm:h-[760px] sm:max-h-[90vh]">
+        <div className="fixed bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-40 sm:w-[560px] sm:max-w-[calc(100vw-3rem)] h-[calc(100dvh-1.5rem)] sm:h-[760px] sm:max-h-[90dvh]">
           <div className="relative w-full h-full">
             <AIChat city={city} />
             <button

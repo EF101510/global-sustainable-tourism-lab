@@ -23,6 +23,16 @@ export default function GlobePage() {
   const [zoomingIn, setZoomingIn] = useState(false);
   const [rotationPaused, setRotationPaused] = useState(false);
 
+  // Touch device? Drives the mobile interaction copy and makes the preview
+  // card tappable (on touch there's no hover, so the card itself becomes the
+  // big tap target that confirms navigation — see Globe's tap-to-preview).
+  const [isTouch] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches
+  );
+
   // Captured once at mount: did we arrive here via the dashboard's Back button?
   const [initialCameraZ] = useState<number | undefined>(() =>
     (location.state as { fromCity?: boolean } | null)?.fromCity
@@ -94,37 +104,41 @@ export default function GlobePage() {
 
       {/* Header */}
       <div
-        className={`absolute top-0 left-0 right-0 p-6 pointer-events-none transition-opacity duration-500 ${
+        className={`safe-top safe-pad-x absolute top-0 left-0 right-0 p-4 sm:p-6 pointer-events-none transition-opacity duration-500 ${
           zoomingIn ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Globe2 className="w-7 h-7 text-blue-700" />
-            <div>
-              <h1 className="text-xl font-light tracking-wide text-blue-900">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Globe2 className="w-6 h-6 sm:w-7 sm:h-7 text-blue-700 shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-light tracking-wide text-blue-900 truncate">
                 Global Sustainable Tourism <span className="font-semibold">AI Lab</span>
               </h1>
-              <p className="text-xs text-blue-600/70 mt-0.5">
+              <p className="hidden sm:block text-xs text-blue-600/70 mt-0.5">
                 Explore global sustainable tourism challenges
               </p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0">
             <p className="text-sm text-blue-700 font-medium">25 Cities</p>
-            <p className="text-xs text-blue-500/70">Click a marker · Drag to rotate</p>
+            <p className="hidden sm:block text-xs text-blue-500/70">
+              {isTouch ? 'Tap a marker · Drag to rotate' : 'Click a marker · Drag to rotate'}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Bottom hint */}
       <div
-        className={`absolute bottom-6 left-0 right-0 text-center pointer-events-none transition-opacity duration-500 ${
+        className={`safe-bottom absolute bottom-6 left-0 right-0 px-4 text-center pointer-events-none transition-opacity duration-500 ${
           zoomingIn ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        <p className="text-xs text-blue-500/60 tracking-widest">
-          DRAG TO ROTATE · SCROLL TO ZOOM · CLICK A POINT
+        <p className="text-[10px] sm:text-xs text-blue-500/60 tracking-widest">
+          {isTouch
+            ? 'DRAG TO ROTATE · PINCH TO ZOOM · TAP A POINT'
+            : 'DRAG TO ROTATE · SCROLL TO ZOOM · CLICK A POINT'}
         </p>
       </div>
 
@@ -150,11 +164,14 @@ export default function GlobePage() {
       {/* Hover intro card — frosted glass */}
       {hoveredCity && !zoomingIn && (
         <div
-          className="fixed pointer-events-none z-50"
+          className={`fixed z-50 ${
+            isTouch ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'
+          }`}
           style={{
-            left: Math.min(hover.x + 20, window.innerWidth - 288),
-            top: Math.min(hover.y + 20, window.innerHeight - 280),
+            left: Math.max(8, Math.min(hover.x + 20, window.innerWidth - 288)),
+            top: Math.max(8, Math.min(hover.y + 20, window.innerHeight - 280)),
           }}
+          onClick={isTouch ? () => handleCitySelect(hoveredCity) : undefined}
         >
           <div
             className="
@@ -233,7 +250,7 @@ export default function GlobePage() {
             {/* CTA footer */}
             <div className="px-4 py-2 bg-gradient-to-r from-blue-500/5 via-cyan-500/10 to-blue-500/5 border-t border-white/30">
               <p className="text-[10px] font-medium text-blue-700/90 flex items-center justify-center gap-1 tracking-wide">
-                Click to explore
+                {isTouch ? 'Tap to explore' : 'Click to explore'}
                 <ArrowUpRight className="w-3 h-3" />
               </p>
             </div>
