@@ -269,30 +269,6 @@ export default function Globe({
     const ptrDist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
       Math.hypot(a.x - b.x, a.y - b.y);
 
-    /** Raycast at a client position; return the front-facing city mesh or
-     *  null (markers on the far side of the globe are rejected). */
-    const pickCity = (
-      clientX: number,
-      clientY: number,
-    ): THREE.Object3D | null => {
-      const rect = renderer.domElement.getBoundingClientRect();
-      const ndc = new THREE.Vector2(
-        ((clientX - rect.left) / rect.width) * 2 - 1,
-        -((clientY - rect.top) / rect.height) * 2 + 1,
-      );
-      const raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(ndc, camera);
-      const hits = raycaster.intersectObjects(cityMeshes);
-      if (hits.length === 0) return null;
-      const target = hits[0].object;
-      const cityPos = target.getWorldPosition(new THREE.Vector3());
-      const camDir = new THREE.Vector3()
-        .subVectors(camera.position, new THREE.Vector3(0, 0, 0))
-        .normalize();
-      if (cityPos.clone().normalize().dot(camDir) <= 0) return null;
-      return target;
-    };
-
     /** Nearest front-facing marker within `radiusPx` (screen space) of a
      *  point. Used for touch taps so a fat finger — and clusters of cities
      *  that sit close together — still resolve to the closest marker rather
