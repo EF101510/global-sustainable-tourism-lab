@@ -61,10 +61,24 @@ export default function Globe({
 
     const width = mount.clientWidth;
     const height = mount.clientHeight;
+    const aspect = width / height;
+    const globeRadius = 2.5;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    const REST_CAMERA_Z = 7;
+    const camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
+    // Frame the globe so it doesn't dominate narrow/portrait screens. On wide
+    // screens the vertical FOV sets the size (BASE_Z); on tall phones the
+    // horizontal FOV shrinks, so we pull the camera back to keep the globe's
+    // width inside the viewport instead of overflowing the sides.
+    const BASE_Z = 7;
+    const V_HALF_TAN = Math.tan((45 / 2) * (Math.PI / 180));
+    // Keep the globe's diameter within ~90% of the narrower viewport dimension.
+    const fitZ = globeRadius / (0.9 * V_HALF_TAN * Math.min(aspect, 1));
+    const REST_CAMERA_Z = Math.max(BASE_Z, fitZ);
+    // Zoom bounds. Give portrait phones headroom above the (larger) rest
+    // distance so pinch-out still has room.
+    const MIN_Z = 4;
+    const MAX_Z = Math.max(15, REST_CAMERA_Z + 3);
     camera.position.z = initialCameraZ ?? REST_CAMERA_Z;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -72,7 +86,6 @@ export default function Globe({
     renderer.setPixelRatio(window.devicePixelRatio);
     mount.appendChild(renderer.domElement);
 
-    const globeRadius = 2.5;
     const globeGeometry = new THREE.SphereGeometry(globeRadius, 64, 64);
     const globeMaterial = new THREE.MeshBasicMaterial({
       map: createOceanTexture(),
@@ -369,7 +382,7 @@ export default function Globe({
         if (pinchPrevDist > 0) {
           // Pinch out (distance grows) → camera moves closer (smaller z).
           camera.position.z -= (d - pinchPrevDist) * 0.01;
-          camera.position.z = Math.max(4, Math.min(15, camera.position.z));
+          camera.position.z = Math.max(MIN_Z, Math.min(MAX_Z, camera.position.z));
         }
         pinchPrevDist = d;
         return;
@@ -477,7 +490,7 @@ export default function Globe({
       // Lower bound is a tiny positive number — just enough to keep the
       // camera from crossing the origin (which would flip the view); the
       // user can otherwise zoom in past the globe surface freely.
-      camera.position.z = Math.max(4, Math.min(15, camera.position.z));
+      camera.position.z = Math.max(MIN_Z, Math.min(MAX_Z, camera.position.z));
     };
 
     // touch-action:none stops the browser from scrolling/zooming the page
