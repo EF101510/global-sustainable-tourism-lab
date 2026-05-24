@@ -25,20 +25,20 @@
 ```sh
 npm i -g wrangler
 wrangler login
-wrangler pages project create global-tourism-lab
+wrangler pages project create global-sustainable-tourism-lab
 ```
 
 設環境變數（在 Pages dashboard 的 Settings → Environment variables，或 CLI）：
 ```sh
-wrangler pages secret put ANTHROPIC_API_KEY --project-name=global-tourism-lab
-wrangler pages secret put ANTHROPIC_MODEL   --project-name=global-tourism-lab
-wrangler pages secret put ANTHROPIC_EFFORT  --project-name=global-tourism-lab
+wrangler pages secret put ANTHROPIC_API_KEY --project-name=global-sustainable-tourism-lab
+wrangler pages secret put ANTHROPIC_MODEL   --project-name=global-sustainable-tourism-lab
+wrangler pages secret put ANTHROPIC_EFFORT  --project-name=global-sustainable-tourism-lab
 ```
 
 ## 每次部署
 ```sh
 npm run build
-wrangler pages deploy dist --project-name=global-tourism-lab
+wrangler pages deploy dist --project-name=global-sustainable-tourism-lab
 ```
 
 或在 Pages dashboard 連 git repo，push 自動部署。
