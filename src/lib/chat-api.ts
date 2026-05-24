@@ -35,6 +35,7 @@ Answer in an educational, objective tone with concrete data and real cases. When
 5. Format the response using Markdown — short \`###\` sub-headings for sections, \`**bold**\` for key terms, and \`- \` bullet lists for enumerations. The chat UI renders Markdown cleanly. Do not use \`#\` (h1) or large headings; keep things compact.`;
 }
 
+
 /**
  * Send a chat turn to the backend proxy. The proxy is responsible for
  * forwarding to Anthropic with a server-side API key — never call Anthropic
