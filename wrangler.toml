@@ -44,5 +44,5 @@ ANTHROPIC_EFFORT = "medium"
 # binding on the next deploy.
 [[kv_namespaces]]
 binding = "BOARD"
-id = "03d38c64b58b4761b11df0ec0fe7c97a"
+id = "634cf77663104897af46be808e5436a4"
 # preview_id = "<paste-the-preview-id-here>"
