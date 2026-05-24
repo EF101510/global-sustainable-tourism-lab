@@ -2,7 +2,9 @@
 
 **English** | [繁體中文](README.zh-TW.md)
 
-🌐 **Live demo:** <https://global-sustainable-tourism-lab-c73.pages.dev/>
+[![Live Demo](https://img.shields.io/badge/Live_Demo-online-22C55E?logo=cloudflare&logoColor=white)](https://global-sustainable-tourism-lab-c73.pages.dev/)
+![Last commit](https://img.shields.io/github/last-commit/EF101510/global-sustainable-tourism-lab)
+![Repo size](https://img.shields.io/github/repo-size/EF101510/global-sustainable-tourism-lab)
 
 > A web-based teaching aid for English teachers — students explore "overtourism" issues across 25 cities worldwide, in English.
 

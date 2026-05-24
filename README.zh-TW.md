@@ -2,7 +2,9 @@
 
 [English](README.md) | **繁體中文**
 
-🌐 **線上版：** <https://global-sustainable-tourism-lab-c73.pages.dev/>
+[![Live Demo](https://img.shields.io/badge/Live_Demo-online-22C55E?logo=cloudflare&logoColor=white)](https://global-sustainable-tourism-lab-c73.pages.dev/)
+![Last commit](https://img.shields.io/github/last-commit/EF101510/global-sustainable-tourism-lab)
+![Repo size](https://img.shields.io/github/repo-size/EF101510/global-sustainable-tourism-lab)
 
 > 全球永續觀光 AI 實驗室 — 一個給英文老師的網頁教學輔助工具，讓學生用英文探索全球 25 個城市的「過度旅遊（overtourism）」議題。
 
